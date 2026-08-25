@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aditya Singla | Software Engineer & Data Engineer</title>
+  <meta name="description" content="Portfolio of Aditya Singla — Software Engineer & Data Engineer specializing in distributed data pipelines (ClickHouse, Dagster), backend microservices (Python, C++), and enterprise AI RAG systems.">
+  <meta name="keywords" content="Aditya Singla, Software Engineer, Data Engineer, ClickHouse, Dagster, Python, RAG, FastAPI, Kenya Healthtech, Distributed Systems">
+  <meta name="author" content="Aditya Singla">
+
+  <!-- Open Graph / Meta -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://aditya-singla.github.io/">
+  <meta property="og:title" content="Aditya Singla | Software Engineer & Data Engineer">
+  <meta property="og:description" content="Mastering large-scale data management, backend development, and AI-driven data architectures.">
+  
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons for crisp UI symbols -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Background Canvas for dynamic data nodes mesh -->
+  <canvas id="bg-canvas"></canvas>
+  <div class="bg-ambient-glow"></div>
+
+  <!-- Sticky Glass Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="container">
+      <a href="#home" class="brand-logo">
+        <div class="logo-badge">&lt;AS/&gt;</div>
+        <span>ADITYA SINGLA</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#about" class="nav-link">About</a></li>
+        <li><a href="#experience" class="nav-link">Experience</a></li>
+        <li><a href="#architecture" class="nav-link">Architecture</a></li>
+        <li><a href="#projects" class="nav-link">Projects</a></li>
+        <li><a href="#skills" class="nav-link">Skills</a></li>
+        <li><a href="#education" class="nav-link">Education</a></li>
+        <li><a href="#contact" class="nav-link">Contact</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <div class="status-pill">
+          <span class="status-dot"></span>
+          <span>Open to Opportunities</span>
+        </div>
+        <a href="#terminal" class="btn btn-terminal-toggle">
+          <i class="fa-solid fa-terminal"></i> CLI
+        </a>
+        <button class="mobile-toggle" aria-label="Toggle Menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero" id="home">
+    <div class="container">
+      <div class="hero-grid">
+        <div class="hero-content">
+          <div class="hero-eyebrow">
+            <i class="fa-solid fa-bolt-lightning"></i> SOFTWARE ENGINEER & DATA ENGINEER
+          </div>
+          <h1 class="hero-title">
+            Engineering Precision Data Pipelines & <span class="gradient-text">High-Speed AI Systems</span>
+          </h1>
+          <p class="hero-subtitle">
+            Driven by the challenge of bridging backend engineering, large-scale distributed data processing (ClickHouse, Dagster), and enterprise AI architectures across AWS & GCP.
+          </p>
+
+          <div class="hero-cta-group">
+            <a href="#experience" class="btn btn-primary">
+              <i class="fa-solid fa-arrow-down"></i> Explore Experience
+            </a>
+            <a href="#architecture" class="btn btn-outline">
+              <i class="fa-solid fa-diagram-project"></i> System Architecture
+            </a>
+            <a href="#contact" class="btn btn-outline">
+              <i class="fa-solid fa-paper-plane"></i> Get In Touch
+            </a>
+          </div>
+
+          <div class="hero-stats-strip">
+            <div class="stat-item">
+              <span class="stat-value highlight-cyan">75%</span>
+              <div class="stat-label">Latency Slashed (60h → 15h)</div>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value highlight-emerald">50+</span>
+              <div class="stat-label">Production ELT Pipelines</div>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">4×</span>
+              <div class="stat-label">Throughput Multiplier</div>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value highlight-cyan">100%</span>
+              <div class="stat-label">Autonomous Execution</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="code-window">
+            <div class="code-window-header">
+              <div class="window-dots">
+                <span class="window-dot red"></span>
+                <span class="window-dot yellow"></span>
+                <span class="window-dot green"></span>
+              </div>
+              <div class="window-title">aditya_pipeline_engine.py</div>
+              <div style="font-size: 0.75rem; color: var(--accent-emerald);">● ACTIVE</div>
+            </div>
+            <div class="code-window-body">
+              <div class="code-line">
+                <span class="line-num">01</span>
+                <span><span class="token-keyword">from</span> <span class="token-string">dagster</span> <span class="token-keyword">import</span> <span class="token-function">asset</span>, <span class="token-function">repository</span></span>
+              </div>
+              <div class="code-line">
+                <span class="line-num">02</span>
+                <span><span class="token-keyword">from</span> <span class="token-string">clickhouse_driver</span> <span class="token-keyword">import</span> <span class="token-function">Client</span></span>
+              </div>
+              <div class="code-line">
+                <span class="line-num">03</span>
+                <span><span class="token-keyword">from</span> <span class="token-string">langchain.llms</span> <span class="token-keyword">import</span> <span class="token-function">LlamaCpp</span></span>
+              </div>
+              <div class="code-line">
+                <span class="line-num">04</span>
+                <span></span>
+              </div>
+              <div class="code-line">
+                <span class="line-num">05</span>
+                <span><span class="token-comment"># Truncate-and-Reload Multi-Threaded Engine</span></span>
+              </div>
+              <div class="code-line">
+                <span class="line-num">06</span>
+                <span><span class="token-keyword">class</span> <span class="token-function">EnterpriseDataMesh</span>:</span>
+              </div>
+              <div class="code-line">
+                <span class="line-num">07</span>
+                <span>&nbsp;&nbsp;<span class="token-keyword">def</span> <span class="token-function">__init__</span>(<span class="token-accent">self</span>):</span>
+              </div>
+              <div class="code-line">
+                <span class="line-num">08</span>
+                <span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="token-accent">self</span>.db = <span class="token-function">Client</span>(host=<span class="token-string">'clickhouse-prod'</span>)</span>
+              </div>
+              <div class="code-line">
+                <span class="line-num">09</span>
+                <span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="token-accent">self</span>.cache = <span class="token-function">Redis</span>(host=<span class="token-string">'cache-layer'</span>)</span>
+              </div>
+              <div class="code-line">
+                <span class="line-num">10</span>
+                <span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="token-accent">self</span>.throughput = <span class="token-metric">"4x_accelerated"</span></span>
+              </div>
+              <div class="code-line">
+                <span class="line-num">11</span>
+                <span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="token-accent">self</span>.latency_reduction = <span class="token-metric">"75%"</span></span>
+              </div>
+              <div class="code-line">
+                <span class="line-num">12</span>
+                <span></span>
+              </div>
+              <div class="code-line">
+                <span class="line-num">13</span>
+                <span>&nbsp;&nbsp;<span class="token-keyword">async def</span> <span class="token-function">serve_rag_health_query</span>(self, query):</span>
+              </div>
+              <div class="code-line">
+                <span class="line-num">14</span>
+                <span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="token-keyword">return await</span> <span class="token-function">synthesize_insights</span>(query)</span>
+              </div>
+            </div>
+            <div class="code-status-bar">
+              <span><i class="fa-solid fa-server"></i> Node: Kenya-Gov-Analytics</span>
+              <span class="token-metric"><i class="fa-solid fa-gauge-high"></i> Ingestion SLA: 15 hrs</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- About Section -->
+  <section class="section" id="about">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Core Philosophy</span>
+        <h2 class="section-title">What Drives My Engineering</h2>
+        <p class="section-subtitle">Bridging low-latency backend engineering, massive analytical pipelines, and autonomous intelligence.</p>
+      </div>
+
+      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 2.5rem; backdrop-filter: blur(12px);">
+        <p style="font-size: 1.125rem; color: var(--text-secondary); line-height: 1.85; margin-bottom: 1.5rem;">
+          I am driven by the challenge of building precise, high-speed software and data architectures that scale reliably under mission-critical enterprise workloads. My expertise centers on <strong style="color: var(--text-primary);">backend microservices (FastAPI, Python, C++)</strong>, <strong style="color: var(--text-primary);">large-scale columnar analytics (ClickHouse, Dagster, PostgreSQL)</strong>, and <strong style="color: var(--text-primary);">production AI / NLP retrieval pipelines (vLLMs, LangChain, DSPy, RAG)</strong> deployed on <strong style="color: var(--text-primary);">AWS & GCP</strong>.
+        </p>
+        <p style="font-size: 1.05rem; color: var(--text-secondary); line-height: 1.8;">
+          Whether engineering multithreaded ELT architectures that cut government data ingestion time by 75%, developing AI query interfaces that democratize analytics for non-technical leadership, or engineering ultra-fast algorithmic trade execution pipelines, my goal is always to deliver <strong style="color: var(--accent-cyan);">clean architecture, high throughput, and measurable business impact</strong>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture & Pipeline Visualizer -->
+  <section class="section" id="architecture" style="background: rgba(10, 13, 20, 0.5);">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">System Design</span>
+        <h2 class="section-title">Enterprise Data & AI Architecture</h2>
+        <p class="section-subtitle">Click through the pipeline stages to inspect data transformation, caching, and AI inference layers.</p>
+      </div>
+
+      <div class="pipeline-visualizer">
+        <div class="pipeline-flow">
+          <div class="pipeline-step active" data-step="1">
+            <div class="pipeline-step-icon"><i class="fa-solid fa-cloud-arrow-down"></i></div>
+            <div class="pipeline-step-title">1. Raw Ingestion</div>
+            <div class="pipeline-step-tech">Python · REST · ERP/HIE</div>
+          </div>
+          <div class="pipeline-connector"><i class="fa-solid fa-chevron-right"></i></div>
+
+          <div class="pipeline-step" data-step="2">
+            <div class="pipeline-step-icon"><i class="fa-solid fa-network-wired"></i></div>
+            <div class="pipeline-step-title">2. Orchestration</div>
+            <div class="pipeline-step-tech">Dagster · SQL Mesh</div>
+          </div>
+          <div class="pipeline-connector"><i class="fa-solid fa-chevron-right"></i></div>
+
+          <div class="pipeline-step" data-step="3">
+            <div class="pipeline-step-icon"><i class="fa-solid fa-database"></i></div>
+            <div class="pipeline-step-title">3. Analytics Core</div>
+            <div class="pipeline-step-tech">ClickHouse · Mat. Views</div>
+          </div>
+          <div class="pipeline-connector"><i class="fa-solid fa-chevron-right"></i></div>
+
+          <div class="pipeline-step" data-step="4">
+            <div class="pipeline-step-icon"><i class="fa-solid fa-bolt"></i></div>
+            <div class="pipeline-step-title">4. In-Memory Cache</div>
+            <div class="pipeline-step-tech">Redis · Proxy Intercept</div>
+          </div>
+          <div class="pipeline-connector"><i class="fa-solid fa-chevron-right"></i></div>
+
+          <div class="pipeline-step" data-step="5">
+            <div class="pipeline-step-icon"><i class="fa-solid fa-brain"></i></div>
+            <div class="pipeline-step-title">5. AI / RAG & BI</div>
+            <div class="pipeline-step-tech">vLLMs · DSPy · Power BI</div>
+          </div>
+        </div>
+
+        <div class="pipeline-detail-card">
+          <div class="pipeline-detail-icon" id="pipeline-detail-icon">⚡</div>
+          <div class="pipeline-detail-content">
+            <h4 id="pipeline-detail-title">Multi-Source Raw Ingestion & Truncate-and-Reload Engine</h4>
+            <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-emerald); margin-bottom: 8px;" id="pipeline-detail-tech">
+              Python, Asyncio, REST APIs, ERP/HIE/Payer Feeds
+            </div>
+            <p id="pipeline-detail-desc">
+              Ingests multi-system operational data from health exchanges, financial streams, and ERPs. Leverages multithreaded async chunking to slash initial ingestion windows from 60 hrs to 15 hrs.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Work Experience Section -->
+  <section class="section" id="experience">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Career Milestones</span>
+        <h2 class="section-title">Professional Experience</h2>
+        <p class="section-subtitle">Proven track record in high-stakes data engineering, systems development, and international client delivery.</p>
+      </div>
+
+      <div class="timeline">
+        <!-- 1. Infinia Technologies | Infinia Technologies India -->
+        <div class="timeline-card">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <div>
+                <h3 class="timeline-role">Software Engineer</h3>
+                <div class="timeline-company">
+                  <i class="fa-solid fa-building"></i> Infinia Technologies | Infinia Technologies India
+                </div>
+              </div>
+              <div class="timeline-badge-group">
+                <span class="timeline-date">June 2026 – Present</span>
+                <span class="timeline-location"><i class="fa-solid fa-location-dot"></i> Noida, India · Nairobi, Kenya</span>
+              </div>
+            </div>
+
+            <ul class="timeline-bullets">
+              <li>
+                <strong>Architected & deployed multithreaded ELT truncate-and-reload pipeline</strong>: Reduced data ingestion latency from <strong>60 hrs → 15 hrs (75% processing time reduction)</strong> with a <strong>4× throughput improvement</strong> at enterprise scale, directly improving SLA adherence and reliability for government health analytics reporting.
+              </li>
+              <li>
+                <strong>Built AI-powered NLP query interface</strong> for a national health dashboard using <strong>vLLMs (Llama.cpp), LangChain, DSPy, and Retrieval-Augmented Generation (RAG)</strong> — enabling non-technical government stakeholders to query complex health datasets through natural language without SQL expertise.
+              </li>
+              <li>
+                <strong>Implemented Redis caching layer</strong> to intercept and serve repetitive read queries without hitting the primary database, significantly reducing DB load, cutting average query response times, and sustaining high application throughput under concurrent government user traffic.
+              </li>
+              <li>
+                <strong>Architected a self-service data sync pipeline (Dagster + ClickHouse)</strong> where analysts add new data syncs by dropping a <code>.sql</code> file — eliminating dependency on engineers for schema promotions to PRE PROD.
+              </li>
+            </ul>
+
+            <div class="timeline-tags">
+              <span class="tech-tag">ClickHouse</span>
+              <span class="tech-tag">Dagster</span>
+              <span class="tech-tag">vLLMs (Llama.cpp)</span>
+              <span class="tech-tag">DSPy & LangChain</span>
+              <span class="tech-tag">RAG</span>
+              <span class="tech-tag">Redis</span>
+              <span class="tech-tag">Python</span>
+              <span class="tech-tag">FastAPI</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Infinia Technologies | Apeiro Digital -->
+        <div class="timeline-card">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <div>
+                <h3 class="timeline-role">Graduate Engineer Trainee</h3>
+                <div class="timeline-company">
+                  <i class="fa-solid fa-building"></i> Infinia Technologies | Apeiro Digital
+                </div>
+              </div>
+              <div class="timeline-badge-group">
+                <span class="timeline-date">Feb 2026 – May 2026</span>
+                <span class="timeline-location"><i class="fa-solid fa-location-dot"></i> Noida, India · Nairobi, Kenya</span>
+              </div>
+            </div>
+
+            <ul class="timeline-bullets">
+              <li>
+                <strong>Designed, built, and optimized 50+ production-grade ELT pipelines</strong> using Dagster, ClickHouse, and Python — powering enterprise analytics dashboards with improved stability through materialized view restructuring and ingestion tuning.
+              </li>
+              <li>
+                <strong>Identified and resolved critical data quality and reconciliation issues</strong> across multi-system integrations (ERP, payer, HIE), ensuring consistent, auditable reporting outputs for the Government of Kenya.
+              </li>
+              <li>
+                <strong>Collaborated with cross-functional teams</strong> (UI, BI, product, analytics) to validate KPIs and ensure reliable data flows to Power BI and custom dashboards used by government clients.
+              </li>
+              <li>
+                <strong>Implemented database-level RBAC</strong>, strengthening data security posture with zero downtime and enforcing least-privilege access compliance.
+              </li>
+              <li>
+                <strong>Worked onsite in Nairobi, Kenya</strong>, engaging directly with enterprise clients to accelerate requirement alignment and improve delivery cycle efficiency across multi-timezone engagements.
+              </li>
+            </ul>
+
+            <div class="timeline-tags">
+              <span class="tech-tag">Dagster</span>
+              <span class="tech-tag">ClickHouse</span>
+              <span class="tech-tag">Python</span>
+              <span class="tech-tag">Power BI</span>
+              <span class="tech-tag">RBAC Security</span>
+              <span class="tech-tag">HIE/ERP Integrations</span>
+              <span class="tech-tag">Kenya Onsite Delivery</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Infinia Technologies | Coredge.io -->
+        <div class="timeline-card">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <div>
+                <h3 class="timeline-role">Data & Cloud Infrastructure Engineer</h3>
+                <div class="timeline-company">
+                  <i class="fa-solid fa-building"></i> Infinia Technologies | Coredge.io
+                </div>
+              </div>
+              <div class="timeline-badge-group">
+                <span class="timeline-date">June 2025 – Jan 2026</span>
+                <span class="timeline-location"><i class="fa-solid fa-location-dot"></i> Noida, India</span>
+              </div>
+            </div>
+
+            <ul class="timeline-bullets">
+              <li>
+                Engineered high-performance cloud data pipelines and edge orchestration routines to facilitate multi-region data telemetry and low-latency storage.
+              </li>
+              <li>
+                Collaborated on architectural design for scalable, fault-tolerant cloud services across hybrid edge and cloud environments.
+              </li>
+            </ul>
+
+            <div class="timeline-tags">
+              <span class="tech-tag">Cloud Infrastructure</span>
+              <span class="tech-tag">Python</span>
+              <span class="tech-tag">Distributed Systems</span>
+              <span class="tech-tag">Edge Computing</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. VelTorg -->
+        <div class="timeline-card">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <div>
+                <h3 class="timeline-role">Python Developer</h3>
+                <div class="timeline-company">
+                  <i class="fa-solid fa-building"></i> VelTorg
+                </div>
+              </div>
+              <div class="timeline-badge-group">
+                <span class="timeline-date">April 2024 – May 2025</span>
+                <span class="timeline-location"><i class="fa-solid fa-location-dot"></i> Noida, Uttar Pradesh</span>
+              </div>
+            </div>
+
+            <ul class="timeline-bullets">
+              <li>
+                <strong>Automated end-to-end options trading workflows</strong> using Python, REST APIs, and PostgreSQL — achieving <strong>100% process efficiency</strong> by eliminating all manual intervention and enabling fully autonomous trade execution across multiple concurrent strategies.
+              </li>
+              <li>
+                <strong>Engineered high-throughput async data pipelines</strong> using Pandas, Asyncio, and WebSockets to process real-time options chain data, improving decision-making accuracy by <strong>40%</strong> and increasing portfolio profitability by <strong>1.2×</strong> through faster signal detection and automated execution.
+              </li>
+              <li>
+                <strong>Integrated RabbitMQ and Telegram Bot API</strong> for real-time trade alerts and automated multi-strategy execution — saving traders <strong>6 hours/day</strong> in manual monitoring effort and ensuring zero-downtime continuous operation across market hours.
+              </li>
+              <li>
+                <strong>Designed & deployed Python algo-trading script on Google Cloud Console</strong> to execute real-time market-open orders via Spreadsheet API, consolidating data from 3+ sources (REST APIs, Google Drive, PostgreSQL) with automated 15-minute DB refresh cycles.
+              </li>
+            </ul>
+
+            <div class="timeline-tags">
+              <span class="tech-tag">Python (Asyncio)</span>
+              <span class="tech-tag">WebSockets</span>
+              <span class="tech-tag">RabbitMQ</span>
+              <span class="tech-tag">PostgreSQL</span>
+              <span class="tech-tag">Google Cloud Console</span>
+              <span class="tech-tag">Telegram Bot API</span>
+              <span class="tech-tag">Pandas</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Projects & System Designs -->
+  <section class="section" id="projects" style="background: rgba(10, 13, 20, 0.4);">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Key Architectures</span>
+        <h2 class="section-title">Featured Engineering Projects</h2>
+        <p class="section-subtitle">Scalable data engines, AI query systems, and real-time streaming infrastructure.</p>
+      </div>
+
+      <div class="projects-grid">
+        <!-- Project 1 -->
+        <div class="project-card">
+          <div>
+            <div class="project-meta">
+              <span class="project-category">AI / LLM & NLP</span>
+              <div class="project-icon"><i class="fa-solid fa-brain"></i></div>
+            </div>
+            <h3 class="project-title">National Health NLP & RAG Analytics Interface</h3>
+            <p class="project-desc">
+              Built an intelligent conversational analytical layer over national healthcare data, translating natural language into high-performance ClickHouse SQL queries.
+            </p>
+            <ul class="project-highlights">
+              <li>Integrated Llama.cpp / vLLMs for offline, privacy-compliant inference</li>
+              <li>DSPy-optimized prompt pipelines for zero-shot SQL generation</li>
+              <li>Enabled non-technical government stakeholders to obtain instant KPI reports</li>
+            </ul>
+          </div>
+          <div class="timeline-tags">
+            <span class="tech-tag">vLLMs</span>
+            <span class="tech-tag">LangChain</span>
+            <span class="tech-tag">DSPy</span>
+            <span class="tech-tag">ClickHouse</span>
+            <span class="tech-tag">FastAPI</span>
+          </div>
+        </div>
+
+        <!-- Project 2 -->
+        <div class="project-card">
+          <div>
+            <div class="project-meta">
+              <span class="project-category">High-Scale Data Pipelines</span>
+              <div class="project-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
+            </div>
+            <h3 class="project-title">Multithreaded ELT Truncate-and-Reload Engine</h3>
+            <p class="project-desc">
+              High-throughput pipeline architecture designed to ingest massive government and enterprise datasets with strict SLA guarantees.
+            </p>
+            <ul class="project-highlights">
+              <li>Reduced processing latency from 60 hrs to 15 hrs (75% reduction)</li>
+              <li>Dynamic chunk partitioning with concurrent ClickHouse table swaps</li>
+              <li>Zero data loss and full auditability across all schema promotions</li>
+            </ul>
+          </div>
+          <div class="timeline-tags">
+            <span class="tech-tag">Dagster</span>
+            <span class="tech-tag">ClickHouse</span>
+            <span class="tech-tag">Multithreading</span>
+            <span class="tech-tag">Python</span>
+            <span class="tech-tag">Redis</span>
+          </div>
+        </div>
+
+        <!-- Project 3 -->
+        <div class="project-card">
+          <div>
+            <div class="project-meta">
+              <span class="project-category">FinTech & Real-Time</span>
+              <div class="project-icon"><i class="fa-solid fa-chart-line"></i></div>
+            </div>
+            <h3 class="project-title">Autonomous Options Trading & Market Signal Engine</h3>
+            <p class="project-desc">
+              Sub-second algorithmic execution engine processing live options chain feeds, calculating Greek matrices, and executing multi-leg strategies automatically.
+            </p>
+            <ul class="project-highlights">
+              <li>100% automated trade execution eliminating manual delays</li>
+              <li>Real-time WebSocket streaming with RabbitMQ message dispatch</li>
+              <li>Integrated Telegram bots saving 6 hours of monitoring daily</li>
+            </ul>
+          </div>
+          <div class="timeline-tags">
+            <span class="tech-tag">Asyncio</span>
+            <span class="tech-tag">WebSockets</span>
+            <span class="tech-tag">RabbitMQ</span>
+            <span class="tech-tag">GCP</span>
+            <span class="tech-tag">PostgreSQL</span>
+          </div>
+        </div>
+
+        <!-- Project 4 -->
+        <div class="project-card">
+          <div>
+            <div class="project-meta">
+              <span class="project-category">Data Mesh & Self-Service</span>
+              <div class="project-icon"><i class="fa-solid fa-cubes"></i></div>
+            </div>
+            <h3 class="project-title">Self-Service SQL Schema Ingestion Mesh</h3>
+            <p class="project-desc">
+              A self-service infrastructure empowering analytics teams to register new data syncs by simply depositing raw SQL files into pre-prod repositories.
+            </p>
+            <ul class="project-highlights">
+              <li>Automated Dagster asset generation and ClickHouse table migration</li>
+              <li>Eliminated engineering bottlenecks for continuous dashboard updates</li>
+              <li>Integrated schema validation and role-based access control (RBAC)</li>
+            </ul>
+          </div>
+          <div class="timeline-tags">
+            <span class="tech-tag">Dagster</span>
+            <span class="tech-tag">SQL</span>
+            <span class="tech-tag">ClickHouse</span>
+            <span class="tech-tag">Docker</span>
+            <span class="tech-tag">FastAPI</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Terminal Section -->
+  <section class="terminal-section" id="terminal">
+    <div class="container">
+      <div class="section-header" style="margin-bottom: 2rem;">
+        <span class="section-tag">Interactive CLI</span>
+        <h2 class="section-title">Developer Terminal</h2>
+        <p class="section-subtitle">Type commands to interact with my system in real-time. Try typing <span class="mono" style="color: var(--accent-cyan);">help</span> or <span class="mono" style="color: var(--accent-cyan);">skills</span>.</p>
+      </div>
+
+      <div class="terminal-container">
+        <div class="terminal-header">
+          <div class="terminal-buttons">
+            <span class="terminal-btn close"></span>
+            <span class="terminal-btn minimize"></span>
+            <span class="terminal-btn maximize"></span>
+          </div>
+          <div class="terminal-info">
+            <i class="fa-solid fa-terminal"></i> aditya@cloud-node: ~ (zsh)
+          </div>
+          <div style="font-size: 0.75rem; color: var(--accent-cyan); font-family: var(--font-mono);">
+            PORT: 8080 [LIVE]
+          </div>
+        </div>
+        <div class="terminal-body">
+          <div class="terminal-output" id="terminal-output">
+            <div class="terminal-line">
+              <span class="token-accent">Welcome to Aditya Singla's Terminal Environment [v2.4.0-prod]</span>
+            </div>
+            <div class="terminal-line">
+              Type <span class="token-metric">help</span> to view available system commands or explore interactive data objects.
+            </div>
+            <div class="terminal-line" style="color: var(--text-muted); margin-bottom: 12px;">
+              System ready. Memory allocated: 32GB RAM · Node: Nairobi-Noida-Edge
+            </div>
+          </div>
+          <div class="terminal-prompt-line">
+            <span class="prompt-user">aditya@cloud-node:~$</span>
+            <input type="text" class="terminal-input" id="terminal-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="type 'help' and press Enter..." autofocus>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Skills Matrix -->
+  <section class="section" id="skills">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Technical Arsenal</span>
+        <h2 class="section-title">Skills & Technologies</h2>
+        <p class="section-subtitle">Categorized breakdown of technical competencies, frameworks, and distributed cloud tools.</p>
+      </div>
+
+      <div class="skills-filter">
+        <button class="filter-btn active" data-filter="all">All Skills</button>
+        <button class="filter-btn" data-filter="data">Data Engineering</button>
+        <button class="filter-btn" data-filter="languages">Languages</button>
+        <button class="filter-btn" data-filter="ai">AI / ML & LLMs</button>
+        <button class="filter-btn" data-filter="cloud">Cloud & Infra</button>
+        <button class="filter-btn" data-filter="backend">Backend & Tools</button>
+      </div>
+
+      <div class="skills-grid">
+        <!-- Languages -->
+        <div class="skill-category-card" data-category="languages">
+          <div class="skill-card-header">
+            <div class="skill-card-icon"><i class="fa-solid fa-code"></i></div>
+            <h3 class="skill-card-title">Languages</h3>
+          </div>
+          <div class="skill-items">
+            <span class="skill-pill"><i class="fa-brands fa-python"></i> Python</span>
+            <span class="skill-pill"><i class="fa-solid fa-database"></i> SQL</span>
+            <span class="skill-pill"><i class="fa-solid fa-microchip"></i> C++</span>
+            <span class="skill-pill"><i class="fa-brands fa-java"></i> Java</span>
+          </div>
+        </div>
+
+        <!-- Data Engineering -->
+        <div class="skill-category-card" data-category="data">
+          <div class="skill-card-header">
+            <div class="skill-card-icon"><i class="fa-solid fa-server"></i></div>
+            <h3 class="skill-card-title">Data Engineering</h3>
+          </div>
+          <div class="skill-items">
+            <span class="skill-pill">ClickHouse</span>
+            <span class="skill-pill">Dagster</span>
+            <span class="skill-pill">Apache Kafka</span>
+            <span class="skill-pill">BigQuery</span>
+            <span class="skill-pill">PostgreSQL</span>
+            <span class="skill-pill">MySQL</span>
+            <span class="skill-pill">SQLite</span>
+            <span class="skill-pill">DBeaver</span>
+            <span class="skill-pill">Materialized Views</span>
+            <span class="skill-pill">ELT Pipelines</span>
+          </div>
+        </div>
+
+        <!-- AI & ML -->
+        <div class="skill-category-card" data-category="ai">
+          <div class="skill-card-header">
+            <div class="skill-card-icon"><i class="fa-solid fa-brain"></i></div>
+            <h3 class="skill-card-title">AI / ML & LLMs</h3>
+          </div>
+          <div class="skill-items">
+            <span class="skill-pill">LangChain</span>
+            <span class="skill-pill">DSPy</span>
+            <span class="skill-pill">RAG (Retrieval-Augmented)</span>
+            <span class="skill-pill">vLLMs (Llama.cpp)</span>
+            <span class="skill-pill">Time Series Analysis</span>
+            <span class="skill-pill">Feature Engineering</span>
+          </div>
+        </div>
+
+        <!-- Cloud & Infra -->
+        <div class="skill-category-card" data-category="cloud">
+          <div class="skill-card-header">
+            <div class="skill-card-icon"><i class="fa-solid fa-cloud"></i></div>
+            <h3 class="skill-card-title">Cloud & Infrastructure</h3>
+          </div>
+          <div class="skill-items">
+            <span class="skill-pill"><i class="fa-brands fa-google"></i> GCP (Compute, Storage)</span>
+            <span class="skill-pill"><i class="fa-brands fa-aws"></i> AWS</span>
+            <span class="skill-pill">Redis</span>
+            <span class="skill-pill">RabbitMQ</span>
+            <span class="skill-pill"><i class="fa-brands fa-docker"></i> Docker</span>
+            <span class="skill-pill"><i class="fa-brands fa-linux"></i> Linux</span>
+          </div>
+        </div>
+
+        <!-- Visualization & BI -->
+        <div class="skill-category-card" data-category="data">
+          <div class="skill-card-header">
+            <div class="skill-card-icon"><i class="fa-solid fa-chart-pie"></i></div>
+            <h3 class="skill-card-title">Visualization & BI</h3>
+          </div>
+          <div class="skill-items">
+            <span class="skill-pill">Power BI</span>
+            <span class="skill-pill">Looker Studio</span>
+            <span class="skill-pill">Metabase</span>
+            <span class="skill-pill">Custom Dashboards</span>
+          </div>
+        </div>
+
+        <!-- Backend & Frameworks -->
+        <div class="skill-category-card" data-category="backend">
+          <div class="skill-card-header">
+            <div class="skill-card-icon"><i class="fa-solid fa-network-wired"></i></div>
+            <h3 class="skill-card-title">Backend & Frameworks</h3>
+          </div>
+          <div class="skill-items">
+            <span class="skill-pill">FastAPI</span>
+            <span class="skill-pill">REST APIs</span>
+            <span class="skill-pill">WebSockets</span>
+            <span class="skill-pill">Asyncio</span>
+            <span class="skill-pill"><i class="fa-brands fa-git-alt"></i> Git & GitHub</span>
+            <span class="skill-pill"><i class="fa-brands fa-node-js"></i> Node.js</span>
+            <span class="skill-pill">HTML / CSS / JS</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Education & Awards -->
+  <section class="section" id="education" style="background: rgba(10, 13, 20, 0.5);">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Credentials</span>
+        <h2 class="section-title">Education & Honors</h2>
+        <p class="section-subtitle">Academic foundations and professional recognition.</p>
+      </div>
+
+      <div class="edu-awards-grid">
+        <!-- Education -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <div class="info-card-header-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+            <h3>Education</h3>
+          </div>
+
+          <div class="edu-item">
+            <h4 class="item-main-title">Panjab University, Chandigarh</h4>
+            <div class="item-sub-title">Bachelor of Engineering (B.E.) — Electronics & Communication Engineering</div>
+            <span class="item-date">2020 – 2024 · CGPA: 8.43 / 10</span>
+            <p class="item-desc">
+              <strong>Relevant Coursework:</strong> Object-Oriented Programming (OOP), Data Structures & Algorithms (DSA), Operating Systems, Computer Networks, Database Management Systems (DBMS), Computer Architecture, Digital Signal Processing, Microprocessors & Embedded Systems.
+            </p>
+          </div>
+        </div>
+
+        <!-- Awards & Certifications -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <div class="info-card-header-icon"><i class="fa-solid fa-award"></i></div>
+            <h3>Awards & Certifications</h3>
+          </div>
+
+          <div class="award-item">
+            <h4 class="item-main-title">Process Pioneer Award</h4>
+            <div class="item-sub-title">Apeiro Digital</div>
+            <span class="item-date">Recognized for Delivery Excellence</span>
+            <p class="item-desc">
+              Awarded for optimizing mission-critical data processing workflows, resolving complex latency bottlenecks, and maintaining high delivery excellence for enterprise and government clients.
+            </p>
+          </div>
+
+          <div class="award-item" style="margin-top: 1.5rem;">
+            <h4 class="item-main-title">IBM Data Science Professional</h4>
+            <div class="item-sub-title">Coursera · IBM Certification</div>
+            <span class="item-date">June 2023 · December 2025</span>
+            <p class="item-desc">
+              Deep expertise in Python, Big Data architectures, Machine Learning libraries, SQL optimization, Relational Databases, and Data Mining.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact & Connect Section -->
+  <section class="section" id="contact">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Let's Connect</span>
+        <h2 class="section-title">Get In Touch</h2>
+        <p class="section-subtitle">Reach out directly for technical collaborations, engineering discussions, or hiring inquiries.</p>
+      </div>
+
+      <div class="contact-grid">
+        <!-- Direct Contacts -->
+        <div class="contact-info-cards">
+          <!-- Email -->
+          <div class="contact-card">
+            <div class="contact-card-left">
+              <div class="contact-icon"><i class="fa-solid fa-envelope"></i></div>
+              <div>
+                <div class="contact-label">Email Address</div>
+                <a href="mailto:adityasingla505@gmail.com" class="contact-value">adityasingla505@gmail.com</a>
+              </div>
+            </div>
+            <button class="copy-btn" onclick="copyToClipboard('adityasingla505@gmail.com', 'Email')">
+              <i class="fa-regular fa-copy"></i> Copy
+            </button>
+          </div>
+
+          <!-- Phone -->
+          <div class="contact-card">
+            <div class="contact-card-left">
+              <div class="contact-icon"><i class="fa-solid fa-phone"></i></div>
+              <div>
+                <div class="contact-label">Phone</div>
+                <a href="tel:+918146536653" class="contact-value">+91-8146536653</a>
+              </div>
+            </div>
+            <button class="copy-btn" onclick="copyToClipboard('+918146536653', 'Phone number')">
+              <i class="fa-regular fa-copy"></i> Copy
+            </button>
+          </div>
+
+          <!-- Location -->
+          <div class="contact-card">
+            <div class="contact-card-left">
+              <div class="contact-icon"><i class="fa-solid fa-location-dot"></i></div>
+              <div>
+                <div class="contact-label">Primary Location</div>
+                <div class="contact-value">Delhi NCR, India (Available for Remote & Relocation)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- LinkedIn & GitHub quick links -->
+          <div class="contact-card">
+            <div class="contact-card-left">
+              <div class="contact-icon"><i class="fa-brands fa-linkedin"></i></div>
+              <div>
+                <div class="contact-label">Professional Network</div>
+                <a href="https://linkedin.com" target="_blank" class="contact-value">LinkedIn Profile</a>
+              </div>
+            </div>
+            <a href="https://linkedin.com" target="_blank" class="btn btn-outline" style="padding: 6px 14px; font-size: 0.8rem;">
+              Connect <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Contact Form -->
+        <div class="contact-form">
+          <form id="portfolio-contact-form">
+            <div class="form-group">
+              <label class="form-label" for="form-name">Your Name</label>
+              <input type="text" id="form-name" class="form-input" placeholder="e.g. Sarah Connor" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="form-email">Your Email</label>
+              <input type="email" id="form-email" class="form-input" placeholder="name@company.com" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="form-subject">Subject</label>
+              <input type="text" id="form-subject" class="form-input" placeholder="Role Discussion / Data Engineering Collaboration">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="form-message">Message</label>
+              <textarea id="form-message" class="form-textarea" placeholder="Hi Aditya, we'd like to discuss opportunities..." required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+              <i class="fa-solid fa-paper-plane"></i> Send Direct Message
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-text">
+        © 2026 Aditya Singla. Built with vanilla high-performance web standards.
+      </div>
+
+      <div class="footer-socials">
+        <a href="mailto:adityasingla505@gmail.com" class="social-icon-btn" title="Email"><i class="fa-solid fa-envelope"></i></a>
+        <a href="https://linkedin.com" target="_blank" class="social-icon-btn" title="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
+        <a href="https://github.com/imavi-5" target="_blank" class="social-icon-btn" title="GitHub"><i class="fa-brands fa-github"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
