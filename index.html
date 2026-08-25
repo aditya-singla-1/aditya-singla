@@ -1953,32 +1953,45 @@ a {
       <div class="contact-grid-layout">
         <!-- Direct Contact Cards -->
         <div class="contact-info-panel">
-          <!-- Email Card -->
+          <!-- Email / Gmail Card -->
           <div class="direct-card">
             <div class="direct-left">
-              <div class="direct-icon"><i class="fa-solid fa-envelope"></i></div>
+              <div class="direct-icon" style="color: #ea4335; background: rgba(234, 67, 53, 0.1);"><i class="fa-brands fa-google"></i></div>
               <div>
-                <div class="direct-label">Direct Email</div>
-                <a href="mailto:adityasingla505@gmail.com" class="direct-value">adityasingla505@gmail.com</a>
+                <div class="direct-label">Gmail / Direct Email</div>
+                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=adityasingla505@gmail.com" target="_blank" class="direct-value">adityasingla505@gmail.com</a>
               </div>
             </div>
-            <button class="copy-action-btn" onclick="copyToClipboard('adityasingla505@gmail.com', 'Email')">
-              <i class="fa-regular fa-copy"></i> Copy
-            </button>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <a href="https://mail.google.com/mail/?view=cm&fs=1&to=adityasingla505@gmail.com" target="_blank" class="copy-action-btn" title="Open in Gmail">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i> Gmail
+              </a>
+              <button class="copy-action-btn" onclick="copyToClipboard('adityasingla505@gmail.com', 'Email')">
+                <i class="fa-regular fa-copy"></i>
+              </button>
+            </div>
           </div>
 
-          <!-- Phone Card -->
+          <!-- Phone & WhatsApp Card -->
           <div class="direct-card">
             <div class="direct-left">
-              <div class="direct-icon"><i class="fa-solid fa-phone"></i></div>
+              <div class="direct-icon" style="color: #25d366; background: rgba(37, 211, 102, 0.1);"><i class="fa-brands fa-whatsapp"></i></div>
               <div>
-                <div class="direct-label">Direct Phone / WhatsApp</div>
-                <a href="tel:+918146536653" class="direct-value">+91-8146536653</a>
+                <div class="direct-label">WhatsApp & Phone</div>
+                <a href="https://wa.me/918146536653?text=Hi%20Aditya,%20I'd%20like%20to%20discuss%20tech%20solutions" target="_blank" class="direct-value">+91-8146536653</a>
               </div>
             </div>
-            <button class="copy-action-btn" onclick="copyToClipboard('+918146536653', 'Phone number')">
-              <i class="fa-regular fa-copy"></i> Copy
-            </button>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <a href="https://wa.me/918146536653?text=Hi%20Aditya,%20I'd%20like%20to%20discuss%20tech%20solutions" target="_blank" class="copy-action-btn" style="color: #25d366; border-color: rgba(37, 211, 102, 0.3);" title="Chat on WhatsApp">
+                <i class="fa-brands fa-whatsapp"></i> Chat
+              </a>
+              <a href="tel:+918146536653" class="copy-action-btn" title="Call directly">
+                <i class="fa-solid fa-phone"></i> Call
+              </a>
+              <button class="copy-action-btn" onclick="copyToClipboard('+918146536653', 'Phone number')">
+                <i class="fa-regular fa-copy"></i>
+              </button>
+            </div>
           </div>
 
           <!-- Location Card -->
@@ -1995,14 +2008,14 @@ a {
           <!-- LinkedIn Card -->
           <div class="direct-card">
             <div class="direct-left">
-              <div class="direct-icon"><i class="fa-brands fa-linkedin"></i></div>
+              <div class="direct-icon" style="color: #0a66c2; background: rgba(10, 102, 194, 0.1);"><i class="fa-brands fa-linkedin-in"></i></div>
               <div>
                 <div class="direct-label">LinkedIn Network</div>
-                <a href="https://linkedin.com" target="_blank" class="direct-value">Connect on LinkedIn</a>
+                <a href="https://www.linkedin.com/in/aditya---singla/" target="_blank" class="direct-value">linkedin.com/in/aditya---singla</a>
               </div>
             </div>
-            <a href="https://linkedin.com" target="_blank" class="btn btn-secondary" style="padding: 8px 14px; font-size: 0.8rem;">
-              Profile <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            <a href="https://www.linkedin.com/in/aditya---singla/" target="_blank" class="btn btn-secondary" style="padding: 8px 14px; font-size: 0.8rem;">
+              Connect <i class="fa-solid fa-arrow-up-right-from-square"></i>
             </a>
           </div>
         </div>
@@ -2021,13 +2034,13 @@ a {
             </div>
 
             <div class="form-field">
-              <label class="form-label" for="form-subject">Project Scope / Role</label>
+              <label class="form-label" for="form-subject">Topic / Solution Scope</label>
               <input type="text" id="form-subject" class="form-control" placeholder="e.g. ClickHouse Pipeline Optimization / AI RAG System">
             </div>
 
             <div class="form-field">
-              <label class="form-label" for="form-message">Project Details</label>
-              <textarea id="form-message" class="form-textarea-ctrl" placeholder="Briefly describe your data architecture challenges, timeline, or engagement scope..." required></textarea>
+              <label class="form-label" for="form-message">Details</label>
+              <textarea id="form-message" class="form-textarea-ctrl" placeholder="Briefly describe your data architecture challenges or questions..." required></textarea>
             </div>
 
             <button type="submit" class="btn btn-primary" style="width: 100%; padding: 13px;">
@@ -2046,8 +2059,9 @@ a {
         © 2026 Aditya Singla. Software & Data Engineering Consultant. Built for high performance.
       </div>
       <div class="footer-social-links">
-        <a href="mailto:adityasingla505@gmail.com" class="social-circle" title="Email"><i class="fa-solid fa-envelope"></i></a>
-        <a href="https://linkedin.com" target="_blank" class="social-circle" title="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
+        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=adityasingla505@gmail.com" target="_blank" class="social-circle" title="Gmail"><i class="fa-brands fa-google"></i></a>
+        <a href="https://wa.me/918146536653?text=Hi%20Aditya" target="_blank" class="social-circle" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+        <a href="https://www.linkedin.com/in/aditya---singla/" target="_blank" class="social-circle" title="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
         <a href="https://github.com/imavi-5" target="_blank" class="social-circle" title="GitHub"><i class="fa-brands fa-github"></i></a>
       </div>
     </div>
