@@ -41,7 +41,7 @@ git push origin main
 ### Step 2: Configure GitHub Pages
 
 #### Option A: If your repository is named `aditya-singla.github.io` (User/Organization Site)
-1. Go to your GitHub repository: `https://github.com/imavi-5/Aditya-Singla` (or rename it to `aditya-singla.github.io` in **Settings** → **General** → **Repository name**).
+1. Go to your GitHub repository: `https://github.com/aditya-singla-1/aditya-singla.github.io` (or `aditya-singla-1.github.io`).
 2. Go to **Settings** → **Pages** (in the left sidebar).
 3. Under **Build and deployment**:
    - **Source**: Select `Deploy from a branch`.
