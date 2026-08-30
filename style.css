@@ -460,6 +460,25 @@ a {
   margin-top: 2px;
 }
 
+.company-link {
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--border-subtle);
+  transition: all var(--transition-smooth);
+}
+
+.company-link:hover {
+  color: var(--text-brand);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
 .exp-meta {
   display: flex;
   align-items: center;

@@ -440,6 +440,25 @@ a {
   margin-top: 2px;
 }
 
+.company-link {
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--border-subtle);
+  transition: all var(--transition-smooth);
+}
+
+.company-link:hover {
+  color: var(--text-brand);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
 .exp-meta {
   display: flex;
   align-items: center;
@@ -882,7 +901,11 @@ a {
           <div class="exp-header">
             <div>
               <div class="exp-role">Software Engineer</div>
-              <div class="exp-company">Infinia Technologies</div>
+              <div class="exp-company" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 3px;">
+                <span>Infinia Technologies</span>
+                <a href="https://infiniatechnologies.com/" target="_blank" class="company-link" title="Infinia Technologies Website"><i class="fa-solid fa-globe"></i></a>
+                <a href="https://www.linkedin.com/company/infinia-holdings" target="_blank" class="company-link" title="Infinia Technologies LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+              </div>
             </div>
             <div class="exp-meta">
               <span class="exp-date">June 2026 – Present</span>
@@ -901,7 +924,11 @@ a {
           <div class="exp-header">
             <div>
               <div class="exp-role">Graduate Engineer Trainee</div>
-              <div class="exp-company">Infinia Technologies | Apeiro Digital</div>
+              <div class="exp-company" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 3px;">
+                <span>Infinia Technologies | Apeiro Digital</span>
+                <a href="https://www.apeiro.digital/" target="_blank" class="company-link" title="Apeiro Digital Website"><i class="fa-solid fa-globe"></i></a>
+                <a href="https://www.linkedin.com/company/apeiroholding/" target="_blank" class="company-link" title="Apeiro Digital LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+              </div>
             </div>
             <div class="exp-meta">
               <span class="exp-date">Feb 2026 – May 2026</span>
@@ -920,7 +947,11 @@ a {
           <div class="exp-header">
             <div>
               <div class="exp-role">Graduate Engineer Trainee</div>
-              <div class="exp-company">Infinia Technologies | Coredge.io</div>
+              <div class="exp-company" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 3px;">
+                <span>Infinia Technologies | Coredge.io</span>
+                <a href="https://coredge.io/" target="_blank" class="company-link" title="Coredge.io Website"><i class="fa-solid fa-globe"></i></a>
+                <a href="https://in.linkedin.com/company/coredge-io" target="_blank" class="company-link" title="Coredge.io LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+              </div>
             </div>
             <div class="exp-meta">
               <span class="exp-date">June 2025 – Jan 2026</span>
