@@ -1,216 +1,94 @@
 /**
- * ADITYA SINGLA - CLIENT PORTFOLIO INTERACTIVE ENGINE
- * Features: Dynamic Canvas Node Mesh, Filterable Skills, 
- * Copy-to-Clipboard Toasts, Navigation Controller & Inquiry Form.
+ * ADITYA SINGLA — MINIMALIST PORTFOLIO SCRIPT
+ * Taste-Skill / Anti-Slop principles: clean, lightweight, purpose-driven interactions.
  */
 
-document.addEventListener('DOMContentLoaded', () => {
-  initCanvasNetwork();
-  initSkillTabs();
-  initScrollSpy();
-  initMobileNav();
-  initContactForm();
-});
+// Mobile Navigation Toggle
+const mobileToggle = document.querySelector('.mobile-toggle');
+const navLinks = document.querySelector('.nav-links');
 
-/* ==========================================================================
-   1. CANVAS DATA MESH BACKGROUND
-   ========================================================================== */
-function initCanvasNetwork() {
-  const canvas = document.getElementById('bg-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-
-  let width = (canvas.width = window.innerWidth);
-  let height = (canvas.height = window.innerHeight);
-
-  window.addEventListener('resize', () => {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
+if (mobileToggle && navLinks) {
+  mobileToggle.addEventListener('click', () => {
+    navLinks.classList.toggle('active');
+    const icon = mobileToggle.querySelector('i');
+    if (icon) {
+      icon.classList.toggle('fa-bars');
+      icon.classList.toggle('fa-xmark');
+    }
   });
 
-  const nodeCount = Math.min(Math.floor((width * height) / 16000), 75);
-  const nodes = [];
-
-  for (let i = 0; i < nodeCount; i++) {
-    nodes.push({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: (Math.random() - 0.5) * 0.4,
-      radius: Math.random() * 1.8 + 1,
-      color: Math.random() > 0.5 ? 'rgba(0, 242, 254, ' : 'rgba(0, 245, 160, '
-    });
-  }
-
-  function render() {
-    ctx.clearRect(0, 0, width, height);
-
-    // Draw connecting lines between nodes
-    for (let i = 0; i < nodes.length; i++) {
-      for (let j = i + 1; j < nodes.length; j++) {
-        const dx = nodes[i].x - nodes[j].x;
-        const dy = nodes[i].y - nodes[j].y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-
-        if (dist < 135) {
-          const alpha = (1 - dist / 135) * 0.2;
-          ctx.strokeStyle = `rgba(0, 242, 254, ${alpha})`;
-          ctx.lineWidth = 0.8;
-          ctx.beginPath();
-          ctx.moveTo(nodes[i].x, nodes[i].y);
-          ctx.lineTo(nodes[j].x, nodes[j].y);
-          ctx.stroke();
-        }
+  // Close nav on link click
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', () => {
+      navLinks.classList.remove('active');
+      const icon = mobileToggle.querySelector('i');
+      if (icon) {
+        icon.classList.add('fa-bars');
+        icon.classList.remove('fa-xmark');
       }
-    }
-
-    // Draw nodes
-    for (let i = 0; i < nodes.length; i++) {
-      const n = nodes[i];
-      n.x += n.vx;
-      n.y += n.vy;
-
-      if (n.x < 0 || n.x > width) n.vx *= -1;
-      if (n.y < 0 || n.y > height) n.vy *= -1;
-
-      ctx.beginPath();
-      ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
-      ctx.fillStyle = n.color + '0.7)';
-      ctx.shadowBlur = 8;
-      ctx.shadowColor = '#00f2fe';
-      ctx.fill();
-      ctx.shadowBlur = 0;
-    }
-
-    requestAnimationFrame(render);
-  }
-
-  render();
-}
-
-/* ==========================================================================
-   2. SKILLS TABS FILTER
-   ========================================================================== */
-function initSkillTabs() {
-  const tabBtns = document.querySelectorAll('.tab-btn');
-  const skillBoxes = document.querySelectorAll('.skill-box[data-category]');
-
-  if (!tabBtns.length) return;
-
-  tabBtns.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      tabBtns.forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      const filter = btn.getAttribute('data-filter');
-
-      skillBoxes.forEach((box) => {
-        if (filter === 'all' || box.getAttribute('data-category') === filter) {
-          box.style.display = 'block';
-          box.style.animation = 'fadeIn 0.35s ease forwards';
-        } else {
-          box.style.display = 'none';
-        }
-      });
     });
   });
 }
 
-/* ==========================================================================
-   3. CLIPBOARD & TOAST NOTIFICATIONS
-   ========================================================================== */
-window.copyToClipboard = function (text, label) {
+// Copy to Clipboard Helper with Minimalist Toast
+function copyToClipboard(text, label = 'Content') {
   navigator.clipboard.writeText(text).then(() => {
-    showToast(`Copied ${label} to clipboard!`);
-  }).catch(() => {
-    showToast(`Copied: ${text}`);
+    showToast(`${label} copied to clipboard`);
+  }).catch(err => {
+    console.error('Failed to copy: ', err);
   });
-};
+}
 
 function showToast(message) {
-  let container = document.querySelector('.toast-area');
-  if (!container) {
-    container = document.createElement('div');
-    container.className = 'toast-area';
-    document.body.appendChild(container);
-  }
+  const existing = document.querySelector('.toast-box');
+  if (existing) existing.remove();
 
   const toast = document.createElement('div');
-  toast.className = 'toast-msg';
-  toast.innerHTML = `<span>✔</span> <span>${message}</span>`;
-  container.appendChild(toast);
+  toast.className = 'toast-box';
+  toast.innerHTML = `<i class="fa-solid fa-check" style="color: var(--text-emerald)"></i> <span>${message}</span>`;
+  document.body.appendChild(toast);
 
   setTimeout(() => {
     toast.style.opacity = '0';
-    toast.style.transform = 'translateX(100%)';
-    toast.style.transition = 'all 0.3s ease';
+    toast.style.transition = 'opacity 0.3s ease';
     setTimeout(() => toast.remove(), 300);
-  }, 3200);
+  }, 2400);
 }
 
-/* ==========================================================================
-   4. SCROLL SPY & MOBILE NAV
-   ========================================================================== */
-function initScrollSpy() {
+// Scroll Spy for Navigation Links
+window.addEventListener('scroll', () => {
   const sections = document.querySelectorAll('section[id], header[id]');
-  const navLinks = document.querySelectorAll('.nav-link');
+  const scrollY = window.pageYOffset;
 
-  window.addEventListener('scroll', () => {
-    const scrollY = window.pageYOffset + 140;
+  sections.forEach(current => {
+    const sectionHeight = current.offsetHeight;
+    const sectionTop = current.offsetTop - 100;
+    const sectionId = current.getAttribute('id');
 
-    sections.forEach((current) => {
-      const sectionHeight = current.offsetHeight;
-      const sectionTop = current.offsetTop;
-      const sectionId = current.getAttribute('id');
-
+    const link = document.querySelector(`.nav-link[href*="${sectionId}"]`);
+    if (link) {
       if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
-        navLinks.forEach((link) => {
-          link.classList.remove('active');
-          if (link.getAttribute('href') === `#${sectionId}`) {
-            link.classList.add('active');
-          }
-        });
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
       }
-    });
+    }
   });
-}
+});
 
-function initMobileNav() {
-  const toggleBtn = document.querySelector('.mobile-btn');
-  const navMenu = document.querySelector('.nav-menu');
-
-  if (!toggleBtn || !navMenu) return;
-
-  toggleBtn.addEventListener('click', () => {
-    navMenu.classList.toggle('active');
-  });
-
-  navMenu.querySelectorAll('a').forEach((link) => {
-    link.addEventListener('click', () => {
-      navMenu.classList.remove('active');
-    });
-  });
-}
-
-/* ==========================================================================
-   5. CONTACT FORM SUBMISSION
-   ========================================================================== */
-function initContactForm() {
-  const form = document.getElementById('portfolio-contact-form');
-  if (!form) return;
-
-  form.addEventListener('submit', (e) => {
+// Form Submission Handler
+const contactForm = document.getElementById('contact-form');
+if (contactForm) {
+  contactForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const name = document.getElementById('form-name').value;
     const email = document.getElementById('form-email').value;
-    const subject = document.getElementById('form-subject').value || 'Consulting / Role Inquiry';
+    const subject = document.getElementById('form-subject').value || 'Tech Solutions Discussion';
     const message = document.getElementById('form-message').value;
 
-    const mailtoUrl = `mailto:adityasingla505@gmail.com?subject=${encodeURIComponent(
-      `[Consulting Inquiry] ${subject} - ${name}`
-    )}&body=${encodeURIComponent(`Client / Name: ${name}\nEmail: ${email}\n\nProject Scope & Message:\n${message}`)}`;
-
+    const mailtoUrl = `mailto:adityasingla505@gmail.com?subject=${encodeURIComponent(subject + ' - ' + name)}&body=${encodeURIComponent('From: ' + name + ' (' + email + ')\n\n' + message)}`;
     window.location.href = mailtoUrl;
-    showToast('Opening your email client to send inquiry...');
+    showToast('Redirecting to your mail client...');
+    contactForm.reset();
   });
 }
