@@ -576,6 +576,90 @@ a {
   border-color: var(--border-strong);
 }
 
+/* Resources / Learning Grid */
+.resources-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+.resource-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all var(--transition-smooth);
+}
+
+.resource-card:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-surface-raised);
+  transform: translateY(-2px);
+}
+
+.resource-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.resource-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.resource-badge {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-brand);
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.resource-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.resource-desc {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.resource-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.resource-link:hover {
+  color: var(--text-brand);
+}
+
 /* Education & Certification Cards */
 .edu-grid {
   display: grid;
@@ -795,7 +879,7 @@ a {
   .metric-item:nth-child(2) {
     border-right: none;
   }
-  .systems-grid, .skills-matrix {
+  .systems-grid, .skills-matrix, .resources-grid {
     grid-template-columns: repeat(2, 1fr);
   }
   .contact-container, .edu-grid {
@@ -837,7 +921,7 @@ a {
     border-bottom: none;
     padding-bottom: 0;
   }
-  .systems-grid, .skills-matrix {
+  .systems-grid, .skills-matrix, .resources-grid {
     grid-template-columns: 1fr;
   }
 }
