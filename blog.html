@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Engineering Blog & System Design | Aditya Singla</title>
-  <meta name="description" content="First-principles breakdowns of AI system design, distributed data architectures, LLM inference infrastructure, and backend engineering by Aditya Singla.">
+  <meta name="description" content="Simple, first-principles explanations of distributed systems, AI engineering, database internals, and backend architecture by Aditya Singla.">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,7 +32,7 @@
   --text-emerald: #34d399;
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
-  --container-width: 960px;
+  --container-width: 920px;
   --header-height: 70px;
   --radius-sm: 6px;
   --radius-md: 12px;
@@ -136,8 +136,7 @@ a {
 
 /* Blog Header */
 .blog-hero {
-  padding: calc(var(--header-height) + 3.5rem) 0 3rem;
-  border-bottom: 1px solid var(--border-subtle);
+  padding: calc(var(--header-height) + 3.5rem) 0 2rem;
 }
 
 .blog-badge {
@@ -159,19 +158,96 @@ a {
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.15;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .blog-hero-sub {
-  font-size: 1.1rem;
+  font-size: 1.08rem;
   color: var(--text-secondary);
   max-width: 680px;
   line-height: 1.65;
+  margin-bottom: 2rem;
 }
 
-/* Article Layout */
-.article-section {
-  padding: 3.5rem 0;
+/* Search & Filter Bar */
+.search-filter-box {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  margin-bottom: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.search-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  font-size: 0.95rem;
+}
+
+.search-input {
+  width: 100%;
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 11px 16px 11px 40px;
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color var(--transition-smooth);
+}
+
+.search-input:focus {
+  border-color: var(--text-brand);
+}
+
+.filter-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-chip {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--border-subtle);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-smooth);
+}
+
+.filter-chip:hover {
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.filter-chip.active {
+  background: #ffffff;
+  color: #090a0f;
+  border-color: #ffffff;
+  font-weight: 600;
+}
+
+/* Article Cards */
+.article-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
 }
 
 .article-card {
@@ -179,7 +255,6 @@ a {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 2.25rem;
-  margin-bottom: 2.5rem;
   transition: border-color var(--transition-smooth);
 }
 
@@ -223,11 +298,11 @@ a {
 }
 
 .article-title {
-  font-size: 1.65rem;
+  font-size: 1.6rem;
   font-weight: 700;
   line-height: 1.3;
   letter-spacing: -0.02em;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
 
 .article-summary {
@@ -237,54 +312,74 @@ a {
   margin-bottom: 1.5rem;
 }
 
-/* Deep-dive Content Styling */
+/* Article Body Breakdown */
 .article-body {
   border-top: 1px solid var(--border-subtle);
   padding-top: 1.5rem;
   margin-top: 1.5rem;
-  font-size: 0.95rem;
-  color: var(--text-secondary);
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
 }
 
 .article-body h3 {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   color: var(--text-primary);
   font-weight: 700;
   margin-top: 0.5rem;
 }
 
-.article-body p {
-  line-height: 1.75;
-}
-
-.system-box {
+.analogy-box {
   background: var(--bg-canvas);
   border: 1px solid var(--border-subtle);
-  border-left: 3px solid var(--text-brand);
+  border-left: 3px solid #eab308;
+  border-radius: var(--radius-sm);
+  padding: 1.1rem 1.25rem;
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.analogy-title {
+  font-weight: 700;
+  color: #fef08a;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.diagram-box {
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin: 0.5rem 0;
+  overflow-x: auto;
+}
+
+.diagram-svg {
+  width: 100%;
+  max-width: 680px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.takeaway-box {
+  background: rgba(52, 211, 153, 0.05);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  border-left: 3px solid var(--text-emerald);
   border-radius: var(--radius-sm);
   padding: 1rem 1.25rem;
   font-size: 0.9rem;
 }
 
-.system-box-title {
+.takeaway-title {
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-emerald);
   margin-bottom: 4px;
-}
-
-.code-snippet {
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  background: var(--bg-canvas);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 1rem 1.25rem;
-  overflow-x: auto;
-  color: #e2e8f0;
-  line-height: 1.5;
 }
 
 .article-footer {
@@ -294,8 +389,31 @@ a {
   justify-content: space-between;
   border-top: 1px solid var(--border-subtle);
   padding-top: 1rem;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: var(--text-tertiary);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Empty State */
+.empty-state {
+  display: none;
+  text-align: center;
+  padding: 4rem 2rem;
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.empty-state i {
+  font-size: 2.5rem;
+  color: var(--text-tertiary);
+  margin-bottom: 1rem;
+}
+
+.empty-state-text {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
 }
 
 /* Footer */
@@ -303,6 +421,7 @@ a {
   padding: 3rem 0;
   border-top: 1px solid var(--border-subtle);
   background: var(--bg-canvas);
+  margin-top: 4rem;
 }
 
 .footer .container {
@@ -343,7 +462,7 @@ a {
 @media (max-width: 768px) {
   .blog-hero-title { font-size: 2.2rem; }
   .article-card { padding: 1.5rem; }
-  .article-title { font-size: 1.35rem; }
+  .article-title { font-size: 1.3rem; }
 }
   </style>
 </head>
@@ -363,109 +482,202 @@ a {
     </div>
   </nav>
 
-  <!-- Blog Hero Header -->
+  <!-- Blog Header -->
   <header class="blog-hero">
     <div class="container">
       <div class="blog-badge">
-        <i class="fa-solid fa-layer-group"></i> Systems & AI Architecture Notes
+        <i class="fa-solid fa-layer-group"></i> Simple First-Principles Notes
       </div>
-      <h1 class="blog-hero-title">Engineering Insights</h1>
+      <h1 class="blog-hero-title">Engineering & System Design</h1>
       <p class="blog-hero-sub">
-        First-principles deep dives into distributed systems, AI/LLM serving infrastructure, database internals, and high-throughput data engineering.
+        Clear, human explanations of how modern AI models, distributed databases, and high-speed backends actually work under the hood.
       </p>
+
+      <!-- Search & Filter Component -->
+      <div class="search-filter-box">
+        <div class="search-input-wrapper">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" id="blog-search" class="search-input" placeholder="Search system design articles, AI topics, keywords..." autocomplete="off">
+        </div>
+        <div class="filter-chips">
+          <button class="filter-chip active" data-category="all">All Articles (2)</button>
+          <button class="filter-chip" data-category="ai">AI & LLM Infra</button>
+          <button class="filter-chip" data-category="system-design">System Design</button>
+          <button class="filter-chip" data-category="databases">Databases & Data Eng</button>
+        </div>
+      </div>
     </div>
   </header>
 
-  <!-- Articles List -->
-  <main class="article-section">
-    <div class="container">
+  <!-- Main Article List -->
+  <main class="container">
+    <div class="article-list" id="article-container">
 
-      <!-- Post 1 (Featured / Latest) -->
-      <article class="article-card featured" id="post-1">
+      <!-- Article 1 (Even Day / AI & LLM Topic) -->
+      <article class="article-card featured" id="post-1" data-category="ai" data-keywords="speculative decoding llm inference vllm gpu memory bandwidth latency ai">
         <div class="article-meta">
           <span class="article-tag">AI Infrastructure</span>
-          <span class="article-tag">System Design</span>
-          <span class="article-date"><i class="fa-regular fa-calendar"></i> August 31, 2026</span>
+          <span class="article-date"><i class="fa-regular fa-calendar"></i> August 31, 2026 (Even Day Topic)</span>
           <span class="article-read-time"><i class="fa-regular fa-clock"></i> 4 min read</span>
         </div>
 
         <h2 class="article-title">
-          How Speculative Decoding & KV-Cache Paging 3× LLM Inference Throughput: A First-Principles Breakdown
+          Why AI Chatbots Are Slow & How "Speculative Decoding" Makes Them 3× Faster
         </h2>
 
         <p class="article-summary">
-          Auto-regressive large language models are notorious for being memory-bandwidth bound rather than compute bound. Here is how modern inference engines (vLLM, TensorRT-LLM) break through this fundamental hardware ceiling using speculative verification and virtual memory paging.
+          Have you ever wondered why generating an AI response feels like watching words slowly type across the screen? The bottleneck isn't calculating math—it's moving data. Here is how modern inference engines break through this speed limit.
         </p>
 
         <div class="article-body">
-          <h3>1. The Core Bottleneck: Memory Bandwidth vs Compute</h3>
-          <p>
-            When an LLM generates text, it processes tokens sequentially one by one. For every single token generated, the GPU must read all 70+ billion parameters from High-Bandwidth Memory (HBM) into SRAM cache. Because the arithmetic intensity (FLOPs per byte transferred) is minimal during single-token generation, modern GPUs spend >80% of their clock cycles simply waiting for memory transfers.
-          </p>
-
-          <div class="system-box">
-            <div class="system-box-title">Hardware Reality Check</div>
-            An NVIDIA H100 provides ~3,350 TFLOPs of FP16 tensor compute, but only 3.35 TB/s of memory bandwidth. Generating 1 token on a 70B model requires reading ~140 GB of weights. Thus, the physical throughput limit per GPU is capped purely by bus speed.
+          <!-- Real Life Analogy Box -->
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: The Master Chef & The Fast Helper
+            </div>
+            Imagine a world-class chef who takes 2 minutes just to walk to the walk-in fridge to grab 1 single pinch of salt. That’s what a GPU does: it takes a long time to fetch 140 GB of model weights from memory just to generate 1 word.<br><br>
+            Instead of making the master chef walk for every word, we hire a cheap, speedy helper (a tiny 1B model). The helper quickly guesses 5 words in advance. The master chef takes one look at all 5 words together, approves 4 of them in one second, and fixes the 5th. You get 4 words for the price of 1 kitchen trip!
           </div>
 
-          <h3>2. The System Design Solution: Speculative Decoding</h3>
+          <h3>1. The Hardware Problem: The Memory Traffic Jam</h3>
           <p>
-            Instead of executing the massive primary model (e.g. 70B) for every token, we pair it with a compact, ultra-fast <strong>Draft Model</strong> (e.g. 1B–3B parameters). 
+            When an AI generates an answer, it cannot predict token #5 until token #4 is written. To produce each single word on a 70-Billion parameter model, the computer has to read the entire 140 GB model from GPU memory.
           </p>
           <p>
-            The draft model quickly guesses the next $K$ tokens (e.g. $K=5$). The primary model then verifies all $K$ candidates in a <strong>single parallel matrix multiplication forward pass</strong>. If 4 of the 5 tokens are accepted, we achieve 4 tokens of generation in the time of roughly 1 memory-read cycle of the large model.
+            The GPU’s compute processors are blazing fast, but they sit idle 80% of the time waiting for memory wires to deliver the weights.
           </p>
 
-          <div class="code-snippet">
-# Speculative Verification Pipeline
-1. Draft Model generates K candidate tokens: [t1, t2, t3, t4, t5] (Cheap memory access)
-2. Target Model runs ONE parallel evaluation pass for all K positions.
-3. Accept tokens where Target_Prob(ti) >= Draft_Prob(ti).
-4. Reject remainder & emit verified prefix.
-Result: 2.5x - 3.2x latency reduction with mathematically identical output distribution.
+          <!-- 2D Clean System Architecture Diagram -->
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 680 180" xmlns="http://www.w3.org/2000/svg">
+              <!-- Background Grid Accent -->
+              <rect x="10" y="10" width="660" height="160" rx="10" fill="#0f1118" stroke="rgba(255,255,255,0.1)" stroke-dasharray="3,3" />
+
+              <!-- Step 1: Draft Model Box -->
+              <rect x="30" y="40" width="180" height="100" rx="8" fill="#151822" stroke="#38bdf8" stroke-width="1.5" />
+              <text x="120" y="70" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">1. DRAFT MODEL</text>
+              <text x="120" y="92" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" text-anchor="middle">Small & Fast (1B - 3B)</text>
+              <text x="120" y="112" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="10.5" text-anchor="middle">Guesses [w1, w2, w3, w4]</text>
+
+              <!-- Arrow 1 -->
+              <line x1="210" y1="90" x2="265" y2="90" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" />
+              <text x="238" y="82" fill="#64748b" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle">Batch</text>
+
+              <!-- Step 2: Verification Engine Box -->
+              <rect x="270" y="40" width="200" height="100" rx="8" fill="#151822" stroke="#34d399" stroke-width="1.5" />
+              <text x="370" y="70" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">2. TARGET MODEL</text>
+              <text x="370" y="92" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" text-anchor="middle">Huge Model (70B+)</text>
+              <text x="370" y="112" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="10.5" text-anchor="middle">Verifies All in 1 Pass</text>
+
+              <!-- Arrow 2 -->
+              <line x1="470" y1="90" x2="525" y2="90" stroke="#64748b" stroke-width="2" />
+
+              <!-- Step 3: Verified Output Box -->
+              <rect x="530" y="40" width="120" height="100" rx="8" fill="#151822" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" />
+              <text x="590" y="70" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="bold" text-anchor="middle">3. OUTPUT</text>
+              <text x="590" y="95" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="14" font-weight="bold" text-anchor="middle">3× Faster</text>
+              <text x="590" y="115" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" text-anchor="middle">No Quality Loss</text>
+            </svg>
           </div>
 
-          <h3>3. Key Takeaway for Data & Backend Engineers</h3>
+          <h3>2. The Solution: Speculative Decoding in 3 Steps</h3>
           <p>
-            The architectural pattern here mirrors classical CPU branch prediction and distributed batching: transform sequential memory-latency bottlenecks into parallelized compute verification. When designing high-throughput backends, always ask if you can trade idle compute for eliminated I/O waits.
+            1. A tiny model runs ahead and guesses the next 4–5 words quickly.<br>
+            2. The big model checks all 5 guesses at once in a single parallel calculation.<br>
+            3. The correct guesses are immediately returned to you, saving 3 to 4 trips to memory.
           </p>
+
+          <!-- Key Takeaway Box -->
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            Whenever your system is waiting on a slow I/O or memory channel, check if you can do cheap speculative pre-computation to turn sequential delays into parallel verification.
+          </div>
         </div>
 
         <div class="article-footer">
-          <span>Written by Aditya Singla</span>
-          <span>Topics: vLLM · Distributed Inference · GPU Systems</span>
+          <span>By Aditya Singla</span>
+          <span>Category: AI & Inference Systems</span>
         </div>
       </article>
 
-      <!-- Post 2: Database Architecture -->
-      <article class="article-card" id="post-2">
+      <!-- Article 2 (Odd Day / System Design Topic) -->
+      <article class="article-card" id="post-2" data-category="system-design" data-keywords="clickhouse postgresql databases columnar oltp olap sql data engineering">
         <div class="article-meta">
-          <span class="article-tag">Data Engineering</span>
-          <span class="article-tag">ClickHouse</span>
-          <span class="article-date"><i class="fa-regular fa-calendar"></i> August 2026</span>
+          <span class="article-tag">System Design</span>
+          <span class="article-tag">Databases</span>
+          <span class="article-date"><i class="fa-regular fa-calendar"></i> August 29, 2026 (Odd Day Topic)</span>
           <span class="article-read-time"><i class="fa-regular fa-clock"></i> 5 min read</span>
         </div>
 
         <h2 class="article-title">
-          ClickHouse vs PostgreSQL: When to Shift from Row-Store OLTP to Columnar OLAP
+          ClickHouse vs PostgreSQL: When Does a Database Actually Break Down?
         </h2>
 
         <p class="article-summary">
-          Traditional relational databases collapse when executing analytical aggregations across 100M+ event streams. Here is an architectural comparison of row-oriented storage vs vectorized columnar execution, partitioning strategies, and ClickHouse MergeTree mechanics.
+          PostgreSQL is fantastic for user logins, orders, and payments. But the moment you ask it to calculate total sales across 50 million rows, queries slow down to a crawl. Here is why the physical way data is stored on disk makes all the difference.
         </p>
 
         <div class="article-body">
-          <h3>The Architectural Tradeoff</h3>
+          <!-- Real Life Analogy Box -->
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: The Spreadsheet vs. The Box of Paper Receipts
+            </div>
+            <strong>PostgreSQL (Row Database)</strong> puts each customer receipt into its own envelope with name, address, phone, item, and price. If you want to find the average price across 10,000 customers, you have to open all 10,000 envelopes and unfold every single sheet of paper.<br><br>
+            <strong>ClickHouse (Column Database)</strong> keeps one single sheet of paper that lists ONLY prices in a clean column. Calculating the average takes 1 second because you only read the price sheet without touching names or addresses.
+          </div>
+
+          <h3>1. Row-Oriented (Postgres) vs Column-Oriented (ClickHouse)</h3>
           <p>
-            Row-oriented databases (PostgreSQL, MySQL) store entire records contiguously on disk. This is optimal for transactional single-row inserts and point lookups (OLTP), but reading 5 columns across 50,000,000 rows forces the OS to load every unrelated field from disk. Columnar engines (ClickHouse) store each attribute in independent compressed column chunks with SIMD vectorization, achieving 100× faster analytics.
+            Hard drives and SSDs read data in chunks (blocks). In a row database, every attribute of user #1 sits right next to user #1's address. To sum 1 column, the database is forced to read all 40 columns from disk.
           </p>
+
+          <!-- 2D Storage Layout Diagram -->
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 680 160" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="10" width="660" height="140" rx="10" fill="#0f1118" stroke="rgba(255,255,255,0.1)" stroke-dasharray="3,3" />
+
+              <!-- Row Store (Postgres) -->
+              <rect x="30" y="35" width="290" height="90" rx="8" fill="#151822" stroke="rgba(255,255,255,0.15)" />
+              <text x="175" y="58" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="11.5" font-weight="bold" text-anchor="middle">POSTGRES (Row Store)</text>
+              <rect x="45" y="70" width="260" height="20" rx="4" fill="#1c202e" />
+              <text x="175" y="84" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-size="9.5" text-anchor="middle">[Row 1: ID, Name, City, Amount]</text>
+              <rect x="45" y="95" width="260" height="20" rx="4" fill="#1c202e" />
+              <text x="175" y="109" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-size="9.5" text-anchor="middle">[Row 2: ID, Name, City, Amount]</text>
+
+              <!-- Column Store (ClickHouse) -->
+              <rect x="360" y="35" width="290" height="90" rx="8" fill="#151822" stroke="#38bdf8" stroke-width="1.5" />
+              <text x="505" y="58" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="11.5" font-weight="bold" text-anchor="middle">CLICKHOUSE (Column Store)</text>
+              <rect x="375" y="70" width="260" height="20" rx="4" fill="#1c202e" />
+              <text x="505" y="84" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-size="9.5" text-anchor="middle">Column IDs: [1, 2, 3, 4, 5 ...]</text>
+              <rect x="375" y="95" width="260" height="20" rx="4" fill="rgba(56,189,248,0.15)" stroke="#38bdf8" />
+              <text x="505" y="109" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="bold" text-anchor="middle">Column Amounts: [$10, $50, $20 ...]</text>
+            </svg>
+          </div>
+
+          <h3>2. The Golden Rule of System Design</h3>
+          <p>
+            • Use <strong>PostgreSQL</strong> when you need ACID consistency, updating individual customer records, and user checkout carts (OLTP).<br>
+            • Use <strong>ClickHouse</strong> when you are streaming millions of events, analytics logs, or generating aggregated dashboards in milliseconds (OLAP).
+          </p>
+
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            Never force an OLTP transactional database to do heavy analytical aggregations. Keep transactional data in Postgres and stream historical events to ClickHouse.
+          </div>
         </div>
 
         <div class="article-footer">
-          <span>Written by Aditya Singla</span>
-          <span>Topics: OLAP · ClickHouse · Vectorized Execution</span>
+          <span>By Aditya Singla</span>
+          <span>Category: Database Architecture & Data Eng</span>
         </div>
       </article>
+
+      <!-- Empty State for Search -->
+      <div class="empty-state" id="empty-state">
+        <i class="fa-solid fa-folder-open"></i>
+        <div class="empty-state-text">No articles found matching your query. Try searching for "AI", "ClickHouse", or "Latency".</div>
+      </div>
 
     </div>
   </main>
@@ -484,6 +696,54 @@ Result: 2.5x - 3.2x latency reduction with mathematically identical output distr
       </div>
     </div>
   </footer>
+
+  <!-- Search & Filter Logic -->
+  <script>
+    const searchInput = document.getElementById('blog-search');
+    const filterChips = document.querySelectorAll('.filter-chip');
+    const articles = document.querySelectorAll('.article-card');
+    const emptyState = document.getElementById('empty-state');
+
+    let currentCategory = 'all';
+
+    function filterArticles() {
+      const query = searchInput.value.toLowerCase().trim();
+      let visibleCount = 0;
+
+      articles.forEach(article => {
+        const category = article.getAttribute('data-category');
+        const keywords = (article.getAttribute('data-keywords') || '').toLowerCase();
+        const text = article.innerText.toLowerCase();
+
+        const matchesCategory = (currentCategory === 'all' || category === currentCategory || (currentCategory === 'databases' && keywords.includes('clickhouse')));
+        const matchesQuery = !query || text.includes(query) || keywords.includes(query);
+
+        if (matchesCategory && matchesQuery) {
+          article.style.display = 'block';
+          visibleCount++;
+        } else {
+          article.style.display = 'none';
+        }
+      });
+
+      if (visibleCount === 0) {
+        emptyState.style.display = 'block';
+      } else {
+        emptyState.style.display = 'none';
+      }
+    }
+
+    searchInput.addEventListener('input', filterArticles);
+
+    filterChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        filterChips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        currentCategory = chip.getAttribute('data-category');
+        filterArticles();
+      });
+    });
+  </script>
 
 </body>
 </html>
