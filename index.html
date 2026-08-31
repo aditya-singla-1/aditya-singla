@@ -115,6 +115,33 @@ a {
   letter-spacing: -0.02em;
 }
 
+.nav-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  border: 1px solid var(--border-strong);
+  background: #000000;
+  display: block;
+}
+
+.hero-profile-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 1.25rem;
+}
+
+.hero-avatar {
+  width: 54px;
+  height: 54px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  border: 2px solid rgba(56, 189, 248, 0.4);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+  background: #000000;
+}
+
 .nav-brand-tag {
   font-family: var(--font-mono);
   font-size: 0.75rem;
@@ -896,7 +923,7 @@ a {
   <nav class="navbar">
     <div class="container">
       <a href="#home" class="nav-brand">
-        <span class="nav-brand-tag">AS</span>
+        <img src="avatar.jpg" alt="Aditya Singla" class="nav-avatar">
         <span>Aditya Singla</span>
       </a>
 
@@ -925,8 +952,11 @@ a {
   <header class="hero-section" id="home">
     <div class="container">
       <div class="hero-intro">
-        <div class="hero-badge">
-          <i class="fa-solid fa-server"></i> Software & Data Systems Engineer
+        <div class="hero-profile-row">
+          <img src="avatar.jpg" alt="Aditya Singla" class="hero-avatar">
+          <div class="hero-badge" style="margin-bottom: 0;">
+            <i class="fa-solid fa-server"></i> Software & Data Systems Engineer
+          </div>
         </div>
         <h1 class="hero-title">
           Architecting resilient, high-speed <span>data systems & backends.</span>
