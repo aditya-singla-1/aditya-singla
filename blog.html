@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Engineering Blog & System Design | Aditya Singla</title>
+  <meta name="description" content="First-principles breakdowns of AI system design, distributed data architectures, LLM inference infrastructure, and backend engineering by Aditya Singla.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+/* Embedded Self-Contained Anti-Slop Blog Styles */
+:root {
+  --bg-canvas: #090a0f;
+  --bg-surface: #0f1118;
+  --bg-surface-raised: #151822;
+  --bg-subtle: #1c202e;
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-tertiary: #64748b;
+  --text-brand: #38bdf8;
+  --text-emerald: #34d399;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --container-width: 960px;
+  --header-height: 70px;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-full: 9999px;
+  --transition-smooth: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 1.75rem;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--transition-smooth);
+}
+
+/* Navbar */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--header-height);
+  background: rgba(9, 10, 15, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border-subtle);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+}
+
+.navbar .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.nav-brand-tag {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-brand);
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--border-subtle);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all var(--transition-smooth);
+}
+
+.btn-back:hover {
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+  transform: translateX(-2px);
+}
+
+/* Blog Header */
+.blog-hero {
+  padding: calc(var(--header-height) + 3.5rem) 0 3rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.blog-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-brand);
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  margin-bottom: 1rem;
+}
+
+.blog-hero-title {
+  font-size: 2.8rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin-bottom: 1rem;
+}
+
+.blog-hero-sub {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  max-width: 680px;
+  line-height: 1.65;
+}
+
+/* Article Layout */
+.article-section {
+  padding: 3.5rem 0;
+}
+
+.article-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 2.25rem;
+  margin-bottom: 2.5rem;
+  transition: border-color var(--transition-smooth);
+}
+
+.article-card:hover {
+  border-color: var(--border-strong);
+}
+
+.article-card.featured {
+  border-color: rgba(56, 189, 248, 0.35);
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.03) 0%, var(--bg-surface) 100%);
+}
+
+.article-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.article-date {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+}
+
+.article-tag {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-brand);
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.article-read-time {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-emerald);
+}
+
+.article-title {
+  font-size: 1.65rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.25rem;
+}
+
+.article-summary {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+
+/* Deep-dive Content Styling */
+.article-body {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 1.5rem;
+  margin-top: 1.5rem;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.article-body h3 {
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  font-weight: 700;
+  margin-top: 0.5rem;
+}
+
+.article-body p {
+  line-height: 1.75;
+}
+
+.system-box {
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--text-brand);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.25rem;
+  font-size: 0.9rem;
+}
+
+.system-box-title {
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.code-snippet {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+.article-footer {
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+}
+
+/* Footer */
+.footer {
+  padding: 3rem 0;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-canvas);
+}
+
+.footer .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.footer-copy {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+}
+
+.footer-links {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon:hover {
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+@media (max-width: 768px) {
+  .blog-hero-title { font-size: 2.2rem; }
+  .article-card { padding: 1.5rem; }
+  .article-title { font-size: 1.35rem; }
+}
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="nav-brand">
+        <span class="nav-brand-tag">AS</span>
+        <span>Aditya Singla</span>
+      </a>
+
+      <a href="index.html" class="btn-back">
+        <i class="fa-solid fa-arrow-left"></i> Back to Portfolio
+      </a>
+    </div>
+  </nav>
+
+  <!-- Blog Hero Header -->
+  <header class="blog-hero">
+    <div class="container">
+      <div class="blog-badge">
+        <i class="fa-solid fa-layer-group"></i> Systems & AI Architecture Notes
+      </div>
+      <h1 class="blog-hero-title">Engineering Insights</h1>
+      <p class="blog-hero-sub">
+        First-principles deep dives into distributed systems, AI/LLM serving infrastructure, database internals, and high-throughput data engineering.
+      </p>
+    </div>
+  </header>
+
+  <!-- Articles List -->
+  <main class="article-section">
+    <div class="container">
+
+      <!-- Post 1 (Featured / Latest) -->
+      <article class="article-card featured" id="post-1">
+        <div class="article-meta">
+          <span class="article-tag">AI Infrastructure</span>
+          <span class="article-tag">System Design</span>
+          <span class="article-date"><i class="fa-regular fa-calendar"></i> August 31, 2026</span>
+          <span class="article-read-time"><i class="fa-regular fa-clock"></i> 4 min read</span>
+        </div>
+
+        <h2 class="article-title">
+          How Speculative Decoding & KV-Cache Paging 3× LLM Inference Throughput: A First-Principles Breakdown
+        </h2>
+
+        <p class="article-summary">
+          Auto-regressive large language models are notorious for being memory-bandwidth bound rather than compute bound. Here is how modern inference engines (vLLM, TensorRT-LLM) break through this fundamental hardware ceiling using speculative verification and virtual memory paging.
+        </p>
+
+        <div class="article-body">
+          <h3>1. The Core Bottleneck: Memory Bandwidth vs Compute</h3>
+          <p>
+            When an LLM generates text, it processes tokens sequentially one by one. For every single token generated, the GPU must read all 70+ billion parameters from High-Bandwidth Memory (HBM) into SRAM cache. Because the arithmetic intensity (FLOPs per byte transferred) is minimal during single-token generation, modern GPUs spend >80% of their clock cycles simply waiting for memory transfers.
+          </p>
+
+          <div class="system-box">
+            <div class="system-box-title">Hardware Reality Check</div>
+            An NVIDIA H100 provides ~3,350 TFLOPs of FP16 tensor compute, but only 3.35 TB/s of memory bandwidth. Generating 1 token on a 70B model requires reading ~140 GB of weights. Thus, the physical throughput limit per GPU is capped purely by bus speed.
+          </div>
+
+          <h3>2. The System Design Solution: Speculative Decoding</h3>
+          <p>
+            Instead of executing the massive primary model (e.g. 70B) for every token, we pair it with a compact, ultra-fast <strong>Draft Model</strong> (e.g. 1B–3B parameters). 
+          </p>
+          <p>
+            The draft model quickly guesses the next $K$ tokens (e.g. $K=5$). The primary model then verifies all $K$ candidates in a <strong>single parallel matrix multiplication forward pass</strong>. If 4 of the 5 tokens are accepted, we achieve 4 tokens of generation in the time of roughly 1 memory-read cycle of the large model.
+          </p>
+
+          <div class="code-snippet">
+# Speculative Verification Pipeline
+1. Draft Model generates K candidate tokens: [t1, t2, t3, t4, t5] (Cheap memory access)
+2. Target Model runs ONE parallel evaluation pass for all K positions.
+3. Accept tokens where Target_Prob(ti) >= Draft_Prob(ti).
+4. Reject remainder & emit verified prefix.
+Result: 2.5x - 3.2x latency reduction with mathematically identical output distribution.
+          </div>
+
+          <h3>3. Key Takeaway for Data & Backend Engineers</h3>
+          <p>
+            The architectural pattern here mirrors classical CPU branch prediction and distributed batching: transform sequential memory-latency bottlenecks into parallelized compute verification. When designing high-throughput backends, always ask if you can trade idle compute for eliminated I/O waits.
+          </p>
+        </div>
+
+        <div class="article-footer">
+          <span>Written by Aditya Singla</span>
+          <span>Topics: vLLM · Distributed Inference · GPU Systems</span>
+        </div>
+      </article>
+
+      <!-- Post 2: Database Architecture -->
+      <article class="article-card" id="post-2">
+        <div class="article-meta">
+          <span class="article-tag">Data Engineering</span>
+          <span class="article-tag">ClickHouse</span>
+          <span class="article-date"><i class="fa-regular fa-calendar"></i> August 2026</span>
+          <span class="article-read-time"><i class="fa-regular fa-clock"></i> 5 min read</span>
+        </div>
+
+        <h2 class="article-title">
+          ClickHouse vs PostgreSQL: When to Shift from Row-Store OLTP to Columnar OLAP
+        </h2>
+
+        <p class="article-summary">
+          Traditional relational databases collapse when executing analytical aggregations across 100M+ event streams. Here is an architectural comparison of row-oriented storage vs vectorized columnar execution, partitioning strategies, and ClickHouse MergeTree mechanics.
+        </p>
+
+        <div class="article-body">
+          <h3>The Architectural Tradeoff</h3>
+          <p>
+            Row-oriented databases (PostgreSQL, MySQL) store entire records contiguously on disk. This is optimal for transactional single-row inserts and point lookups (OLTP), but reading 5 columns across 50,000,000 rows forces the OS to load every unrelated field from disk. Columnar engines (ClickHouse) store each attribute in independent compressed column chunks with SIMD vectorization, achieving 100× faster analytics.
+          </p>
+        </div>
+
+        <div class="article-footer">
+          <span>Written by Aditya Singla</span>
+          <span>Topics: OLAP · ClickHouse · Vectorized Execution</span>
+        </div>
+      </article>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-copy">
+        © 2026 Aditya Singla. Software & Data Engineering.
+      </div>
+      <div class="footer-links">
+        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=adityasingla505@gmail.com" target="_blank" class="btn-icon" title="Gmail"><i class="fa-brands fa-google"></i></a>
+        <a href="https://wa.me/918146536653?text=Hi%20Aditya" target="_blank" class="btn-icon" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+        <a href="https://www.linkedin.com/in/aditya---singla/" target="_blank" class="btn-icon" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+        <a href="https://github.com/aditya-singla-1" target="_blank" class="btn-icon" title="GitHub"><i class="fa-brands fa-github"></i></a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
