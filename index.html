@@ -1330,17 +1330,17 @@ a {
       <!-- Single Featured Headline Box (Keeps main page clean & uncluttered) -->
       <div class="resource-card" style="border-color: rgba(56, 189, 248, 0.3); background: linear-gradient(180deg, rgba(56, 189, 248, 0.03) 0%, var(--bg-surface) 100%);">
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 0.85rem;">
-          <span class="resource-badge">System Design & Caching</span>
-          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);"><i class="fa-regular fa-calendar"></i> August 31, 2026</span>
+          <span class="resource-badge">System Design & API Infra</span>
+          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);"><i class="fa-regular fa-calendar"></i> September 1, 2026</span>
           <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-emerald);"><i class="fa-regular fa-clock"></i> 4 min read</span>
         </div>
 
         <h3 style="font-size: 1.35rem; font-weight: 700; line-height: 1.35; margin-bottom: 0.75rem;">
-          <a href="blog.html#post-1" style="color: var(--text-primary);">Distributed Caching with Redis: Cache-Aside, Write-Through & Fixing Cache Stampedes</a>
+          <a href="blog.html#post-1" style="color: var(--text-primary);">Rate Limiting at Scale: Token Bucket vs. Sliding Window Counters with Redis</a>
         </h3>
 
         <p style="font-size: 0.93rem; color: var(--text-secondary); line-height: 1.65; margin-bottom: 1.25rem;">
-          When 100,000 users hit your service simultaneously, querying PostgreSQL for every single read will crash your database. Here is how in-memory caching drops latency to 1ms and how to guard against cache stampedes.
+          When a scraper or runaway service floods your API with 10,000 requests/sec, your backend servers will crash without protection. Here is how Token Bucket and Sliding Window algorithms enforce strict limits with atomic Redis scripts.
         </p>
 
         <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 1rem; flex-wrap: wrap; gap: 10px;">
