@@ -82,5 +82,7 @@ npx serve .
 
 ## 📬 Contact Details
 - **Email**: [adityasingla505@gmail.com](mailto:adityasingla505@gmail.com)
-- **Phone**: +91-8146536653
+- **WhatsApp**: [@aditya.singla.8](https://wa.me/?text=Hi%20Aditya)
+- **LinkedIn**: [linkedin.com/in/aditya---singla](https://www.linkedin.com/in/aditya---singla/)
+- **GitHub**: [github.com/aditya-singla-1](https://github.com/aditya-singla-1)
 - **Location**: Delhi NCR, India

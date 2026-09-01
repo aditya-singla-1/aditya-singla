@@ -937,7 +937,7 @@ a {
         <li><a href="#systems" class="nav-link">Systems</a></li>
         <li><a href="#skills" class="nav-link">Skills</a></li>
         <li><a href="#resources" class="nav-link">Resources</a></li>
-        <li><a href="blog.html" class="nav-link">Blog</a></li>
+        <li><a href="blog.html" class="nav-link">Tech Articles</a></li>
         <li><a href="#education" class="nav-link">Credentials</a></li>
         <li><a href="#contact" class="nav-link">Contact</a></li>
       </ul>
@@ -1306,7 +1306,7 @@ a {
               AI-accelerated pair programming, full-codebase indexing, rapid architectural refactoring, and agentic development workflows.
             </p>
           </div>
-          <div class="resource-link" style="color: var(--text-tertiary); cursor: default;">
+        <div class="resource-link" style="color: var(--text-tertiary); cursor: default;">
             <i class="fa-solid fa-laptop-code"></i> Daily Driver Environment
           </div>
         </div>
@@ -1314,40 +1314,40 @@ a {
     </div>
   </section>
 
-  <!-- Latest Engineering Insight / Blog Preview Section -->
-  <section class="section" id="blog">
+  <!-- Latest Tech Article Preview Section -->
+  <section class="section" id="articles">
     <div class="container">
       <div class="section-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
         <div>
-          <h2 class="section-title">Latest Engineering Insight</h2>
+          <h2 class="section-title">Latest Tech Article</h2>
           <p class="section-desc">First-principles architectural breakdowns and AI system design notes.</p>
         </div>
         <a href="blog.html" class="btn btn-secondary" style="font-size: 0.85rem;">
-          View Full Archive <i class="fa-solid fa-arrow-right"></i>
+          View All Articles <i class="fa-solid fa-arrow-right"></i>
         </a>
       </div>
 
-      <!-- Single Featured Headline Box (Keeps main page clean & uncluttered) -->
+      <!-- Single Featured Headline Box -->
       <div class="resource-card" style="border-color: rgba(56, 189, 248, 0.3); background: linear-gradient(180deg, rgba(56, 189, 248, 0.03) 0%, var(--bg-surface) 100%);">
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 0.85rem;">
-          <span class="resource-badge">System Design & API Infra</span>
-          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);"><i class="fa-regular fa-calendar"></i> September 1, 2026</span>
+          <span class="resource-badge">AI Infrastructure</span>
+          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);"><i class="fa-regular fa-calendar"></i> August 31, 2026</span>
           <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-emerald);"><i class="fa-regular fa-clock"></i> 4 min read</span>
         </div>
 
         <h3 style="font-size: 1.35rem; font-weight: 700; line-height: 1.35; margin-bottom: 0.75rem;">
-          <a href="blog.html#post-1" style="color: var(--text-primary);">Rate Limiting at Scale: Token Bucket vs. Sliding Window Counters with Redis</a>
+          <a href="blog.html#post-1" style="color: var(--text-primary);">Why AI Chatbots Are Slow & How "Speculative Decoding" Makes Them 3× Faster</a>
         </h3>
 
         <p style="font-size: 0.93rem; color: var(--text-secondary); line-height: 1.65; margin-bottom: 1.25rem;">
-          When a scraper or runaway service floods your API with 10,000 requests/sec, your backend servers will crash without protection. Here is how Token Bucket and Sliding Window algorithms enforce strict limits with atomic Redis scripts.
+          The bottleneck in AI generation isn't computing math—it's moving 140 GB of model weights from memory. Here is how pairing a tiny draft model with a large model triples speed with zero quality loss.
         </p>
 
         <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 1rem; flex-wrap: wrap; gap: 10px;">
           <a href="blog.html#post-1" class="btn btn-primary" style="padding: 7px 14px; font-size: 0.825rem;">
             Read Full Breakdown <i class="fa-solid fa-arrow-right"></i>
           </a>
-          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);">Redirects to dedicated engineering blog</span>
+          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);">Opens Tech Articles Archive</span>
         </div>
       </div>
     </div>
@@ -1414,23 +1414,20 @@ a {
             </div>
           </div>
 
-          <!-- WhatsApp & Phone -->
+          <!-- WhatsApp Chat -->
           <div class="contact-row">
             <div class="contact-row-left">
               <div class="contact-row-icon" style="color: #25d366;"><i class="fa-brands fa-whatsapp"></i></div>
               <div>
-                <div class="contact-row-label">WhatsApp & Phone</div>
-                <div class="contact-row-value">+91-8146536653</div>
+                <div class="contact-row-label">WhatsApp</div>
+                <div class="contact-row-value">@aditya.singla.8</div>
               </div>
             </div>
             <div style="display: flex; gap: 8px;">
-              <a href="https://wa.me/918146536653?text=Hi%20Aditya" target="_blank" class="contact-action-btn" style="color: #25d366;">
+              <a href="https://wa.me/?text=Hi%20Aditya" target="_blank" class="contact-action-btn" style="color: #25d366;">
                 <i class="fa-brands fa-whatsapp"></i> Chat
               </a>
-              <a href="tel:+918146536653" class="contact-action-btn">
-                <i class="fa-solid fa-phone"></i> Call
-              </a>
-              <button class="contact-action-btn" onclick="copyToClipboard('+918146536653', 'Phone')">
+              <button class="contact-action-btn" onclick="copyToClipboard('@aditya.singla.8', 'WhatsApp')">
                 <i class="fa-regular fa-copy"></i>
               </button>
             </div>
@@ -1498,7 +1495,7 @@ a {
       </div>
       <div class="footer-links">
         <a href="https://mail.google.com/mail/?view=cm&fs=1&to=adityasingla505@gmail.com" target="_blank" class="btn-icon" title="Gmail"><i class="fa-brands fa-google"></i></a>
-        <a href="https://wa.me/918146536653?text=Hi%20Aditya" target="_blank" class="btn-icon" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+        <a href="https://wa.me/?text=Hi%20Aditya" target="_blank" class="btn-icon" title="WhatsApp (@aditya.singla.8)"><i class="fa-brands fa-whatsapp"></i></a>
         <a href="https://www.linkedin.com/in/aditya---singla/" target="_blank" class="btn-icon" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
         <a href="https://github.com/aditya-singla-1" target="_blank" class="btn-icon" title="GitHub"><i class="fa-brands fa-github"></i></a>
       </div>
