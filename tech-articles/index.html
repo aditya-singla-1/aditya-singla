@@ -601,7 +601,7 @@ a {
           <input type="text" id="article-search" class="search-input" placeholder="Search tech articles, AI topics, keywords..." autocomplete="off">
         </div>
         <div class="filter-chips">
-          <button class="filter-chip active" data-category="all">All Articles (4)</button>
+          <button class="filter-chip active" data-category="all">All Articles (5)</button>
           <button class="filter-chip" data-category="ai">AI & LLM Infra</button>
           <button class="filter-chip" data-category="system-design">System Design</button>
           <button class="filter-chip" data-category="databases">Databases & Data Eng</button>
@@ -614,8 +614,104 @@ a {
   <main class="container">
     <div class="article-list" id="article-container">
 
-      <!-- Article 1: September 1, 2026 -->
-      <article class="article-card featured" id="post-1" data-category="system-design" data-keywords="rate limiting redis token bucket system design backend scaling distributed systems api gateway">
+      <!-- Article 1: September 2, 2026 -->
+      <article class="article-card featured" id="post-1" data-category="ai" data-keywords="paged attention kv cache vllm llm inference gpu memory fragmentation virtual memory transformer serving">
+        <div class="article-meta">
+          <span class="article-tag">AI Infrastructure</span>
+          <span class="article-tag">LLM Inference</span>
+          <span class="article-date"><i class="fa-regular fa-calendar"></i> September 2, 2026</span>
+          <span class="article-read-time"><i class="fa-regular fa-clock"></i> 4 min read</span>
+        </div>
+
+        <h2 class="article-title">
+          How PagedAttention Stops LLMs From Wasting 80% of GPU Memory
+        </h2>
+
+        <p class="article-summary">
+          When serving Large Language Models, the Key-Value (KV) cache grows with every generated token. Naive memory allocation wastes up to 80% of scarce GPU RAM on empty reserved slots. Here is how PagedAttention borrows virtual memory paging from operating systems to quadruple inference capacity.
+        </p>
+
+        <div class="article-body">
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: Reserving a Whole Restaurant vs. Seating Table by Table
+            </div>
+            Imagine you run a popular pizzeria. A customer walks in and says, <em>"I might have anywhere between 1 and 20 friends joining me later, but I don’t know yet."</em><br><br>
+            Under traditional allocation, the restaurant locks down a massive 20-person table exclusively for them. If only 2 friends show up, 18 chairs sit completely empty all evening while paying customers waiting outside are turned away. That is GPU memory fragmentation.<br><br>
+            With <strong>PagedAttention</strong>, the host seats the customer at a small 2-person table. As each new friend arrives, the host simply links an extra table dynamically. No chairs are ever wasted, and the restaurant can seat 3× to 4× more guests simultaneously!
+          </div>
+
+          <h3>1. The Hardware Bottleneck: The KV Cache Memory Squeeze</h3>
+          <p>
+            Large Language Models generate text one token at a time. To prevent recomputing the attention matrix for all prior words on every new token, the model caches historical Key and Value vector representations in GPU VRAM (the <strong>KV Cache</strong>).<br><br>
+            Because generation length is unpredictable, early serving systems statically allocated contiguous memory blocks for the maximum context window (e.g., 4,096 tokens). In practice, <strong>60% to 80% of GPU memory sat idle as wasted, fragmented space</strong>, capping concurrent request throughput.
+          </p>
+
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 680 175" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="10" width="660" height="155" rx="10" fill="#0f1118" stroke="rgba(255,255,255,0.1)" stroke-dasharray="3,3" />
+              <rect x="30" y="32" width="290" height="118" rx="8" fill="#151822" stroke="#ef4444" stroke-width="1.2" />
+              <text x="175" y="54" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size=\"11\" font-weight="bold" text-anchor="middle">NAIVE CONTIGUOUS ALLOCATION</text>
+              <rect x="45" y="68" width="85" height="24" rx="4" fill="rgba(52,211,153,0.15)" stroke="#34d399" />
+              <text x="87" y="84" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="bold" text-anchor="middle">Tokens [1..20]</text>
+              <rect x="135" y="68" width="170" height="24" rx="4" fill="rgba(239,68,68,0.1)" stroke="#ef4444" stroke-dasharray="3,3" />
+              <text x="220" y="84" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="8.5" text-anchor="middle">60-80% Wasted Reserved VRAM</text>
+              <text x="175" y="115" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="9.5" text-anchor="middle">Static reservation blocks other requests</text>
+              <text x="175" y="133" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">High Fragmentation · Low Concurrency</text>
+              <line x1="335" y1="32" x2="335" y2="150" stroke="rgba(255,255,255,0.15)" stroke-dasharray="2,2" />
+              <rect x="350" y="32" width="300" height="118" rx="8" fill="#151822" stroke="#38bdf8" stroke-width="1.5" />
+              <text x="500" y="54" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">PAGED ATTENTION (vLLM)</text>
+              <rect x="365" y="68" width="80" height="24" rx="4" fill="#1c202e" stroke="#38bdf8" />
+              <text x="405" y="84" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="bold" text-anchor="middle">Block Table</text>
+              <line x1="447" y1="80" x2="468" y2="80" stroke="#64748b" stroke-width="1.5" />
+              <rect x="472" y="68" width="78" height="24" rx="4" fill="rgba(52,211,153,0.15)" stroke="#34d399" />
+              <text x="511" y="84" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8.5" text-anchor="middle">Page #3 (16t)</text>
+              <rect x="556" y="68" width="78" height="24" rx="4" fill="rgba(52,211,153,0.15)" stroke="#34d399" />
+              <text x="595" y="84" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8.5" text-anchor="middle">Page #9 (16t)</text>
+              <text x="500" y="115" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="9.5" text-anchor="middle">Dynamic allocation on demand + Page sharing</text>
+              <text x="500" y="133" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">~0% Waste · 2× to 4× Throughput</text>
+            </svg>
+          </div>
+
+          <h3>2. How PagedAttention Solves Fragmentation</h3>
+          <p>
+            PagedAttention solves this bottleneck using the same principle operating systems use for RAM: <strong>Virtual Memory Paging</strong>.<br><br>
+            • <strong>Fixed-Size Pages</strong>: The KV cache is divided into small, fixed-size blocks (e.g., 16 tokens per block).<br>
+            • <strong>Block Table Mapping</strong>: A lightweight lookup table maps logical tokens to non-contiguous physical GPU memory pages.<br>
+            • <strong>Zero-Copy Sharing</strong>: When branching parallel outputs or conducting multi-turn conversations, multiple requests share identical prompt pages in memory until modifications require a Copy-on-Write.
+          </p>
+
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            When building high-throughput systems with unpredictable, dynamic workloads, avoid static contiguous pre-allocation. Virtual memory paging and discrete block tables eliminate fragmentation and maximize GPU hardware utilization.
+          </div>
+        </div>
+
+        <div class="ai-explainer-box">
+          <div class="ai-explainer-info">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
+          </div>
+          <div class="ai-btn-group">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-1')">
+              <i class="fa-solid fa-robot"></i> ChatGPT
+            </button>
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-1')">
+              <i class="fa-solid fa-brain"></i> Claude
+            </button>
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-1')">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
+            </button>
+          </div>
+        </div>
+
+        <div class="article-footer">
+          <span>Curated Tech Notes</span>
+          <span>Category: AI & Inference Systems</span>
+        </div>
+      </article>
+
+      <!-- Article 2: September 1, 2026 -->
+      <article class="article-card" id="post-2" data-category="system-design" data-keywords="rate limiting redis token bucket system design backend scaling distributed systems api gateway">
         <div class="article-meta">
           <span class="article-tag">System Design</span>
           <span class="article-tag">Backend Infrastructure</span>
@@ -687,13 +783,13 @@ a {
             <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
           </div>
           <div class="ai-btn-group">
-            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-1')">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-2')">
               <i class="fa-solid fa-robot"></i> ChatGPT
             </button>
-            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-1')">
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-2')">
               <i class="fa-solid fa-brain"></i> Claude
             </button>
-            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-1')">
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-2')">
               <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
             </button>
           </div>
@@ -705,8 +801,8 @@ a {
         </div>
       </article>
 
-      <!-- Article 2: August 31, 2026 -->
-      <article class="article-card" id="post-2" data-category="system-design" data-keywords="redis caching c10k cache stampede distributed systems latency backend system design">
+      <!-- Article 3: August 31, 2026 -->
+      <article class="article-card" id="post-3" data-category="system-design" data-keywords="redis caching c10k cache stampede distributed systems latency backend system design">
         <div class="article-meta">
           <span class="article-tag">System Design</span>
           <span class="article-tag">Distributed Caching</span>
@@ -784,13 +880,13 @@ a {
             <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
           </div>
           <div class="ai-btn-group">
-            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-2')">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-3')">
               <i class="fa-solid fa-robot"></i> ChatGPT
             </button>
-            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-2')">
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-3')">
               <i class="fa-solid fa-brain"></i> Claude
             </button>
-            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-2')">
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-3')">
               <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
             </button>
           </div>
@@ -802,8 +898,8 @@ a {
         </div>
       </article>
 
-      <!-- Article 3: August 30, 2026 -->
-      <article class="article-card" id="post-3" data-category="ai" data-keywords="speculative decoding llm inference vllm gpu memory bandwidth latency ai">
+      <!-- Article 4: August 30, 2026 -->
+      <article class="article-card" id="post-4" data-category="ai" data-keywords="speculative decoding llm inference vllm gpu memory bandwidth latency ai">
         <div class="article-meta">
           <span class="article-tag">AI Infrastructure</span>
           <span class="article-date"><i class="fa-regular fa-calendar"></i> August 30, 2026</span>
@@ -872,13 +968,13 @@ a {
             <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
           </div>
           <div class="ai-btn-group">
-            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-3')">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-4')">
               <i class="fa-solid fa-robot"></i> ChatGPT
             </button>
-            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-3')">
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-4')">
               <i class="fa-solid fa-brain"></i> Claude
             </button>
-            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-3')">
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-4')">
               <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
             </button>
           </div>
@@ -890,8 +986,8 @@ a {
         </div>
       </article>
 
-      <!-- Article 4: August 29, 2026 -->
-      <article class="article-card" id="post-4" data-category="databases" data-keywords="clickhouse postgresql databases columnar oltp olap sql data engineering">
+      <!-- Article 5: August 29, 2026 -->
+      <article class="article-card" id="post-5" data-category="databases" data-keywords="clickhouse postgresql databases columnar oltp olap sql data engineering">
         <div class="article-meta">
           <span class="article-tag">System Design</span>
           <span class="article-tag">Databases</span>
@@ -956,13 +1052,13 @@ a {
             <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
           </div>
           <div class="ai-btn-group">
-            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-4')">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-5')">
               <i class="fa-solid fa-robot"></i> ChatGPT
             </button>
-            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-4')">
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-5')">
               <i class="fa-solid fa-brain"></i> Claude
             </button>
-            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-4')">
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-5')">
               <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
             </button>
           </div>
