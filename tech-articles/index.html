@@ -601,7 +601,7 @@ a {
           <input type="text" id="article-search" class="search-input" placeholder="Search tech articles, AI topics, keywords..." autocomplete="off">
         </div>
         <div class="filter-chips">
-          <button class="filter-chip active" data-category="all">All Articles (5)</button>
+          <button class="filter-chip active" data-category="all">All Articles (6)</button>
           <button class="filter-chip" data-category="ai">AI & LLM Infra</button>
           <button class="filter-chip" data-category="system-design">System Design</button>
           <button class="filter-chip" data-category="databases">Databases & Data Eng</button>
@@ -614,8 +614,108 @@ a {
   <main class="container">
     <div class="article-list" id="article-container">
 
-      <!-- Article 1: September 2, 2026 -->
-      <article class="article-card featured" id="post-1" data-category="ai" data-keywords="paged attention kv cache vllm llm inference gpu memory fragmentation virtual memory transformer serving">
+      <!-- Article 1: September 3, 2026 -->
+      <article class="article-card featured" id="post-1" data-category="system-design" data-keywords="database sharding table partitioning postgresql scaling distributed databases system design horizontal scaling backend architecture">
+        <div class="article-meta">
+          <span class="article-tag">System Design</span>
+          <span class="article-tag">Database Architecture</span>
+          <span class="article-date"><i class="fa-regular fa-calendar"></i> September 3, 2026</span>
+          <span class="article-read-time"><i class="fa-regular fa-clock"></i> 4 min read</span>
+        </div>
+
+        <h2 class="article-title">
+          Database Sharding vs. Partitioning: How to Scale Past 100 Million Rows Without Melting Your Database
+        </h2>
+
+        <p class="article-summary">
+          When your database table swells past 100 million rows, even indexed queries crawl to a halt as memory fills and disks thrash. Here is the practical difference between partitioning on a single machine and sharding across multiple servers—and how to decide between them.
+        </p>
+
+        <div class="article-body">
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: Splitting a Thick Binder vs. Buying More Filing Cabinets
+            </div>
+            Imagine you run a legal office with one giant binder holding 100,000 client contracts. Whenever you need to find a contract from 2024, you have to flip through the entire 50-pound book.<br><br>
+            <strong>Partitioning</strong> is like putting colored tab dividers inside that exact same binder: one tab for 2022, one for 2023, and one for 2024. You still have one binder on your desk, but now you flip straight to the 2024 tab. It’s organized, fast, and simple.<br><br>
+            <strong>Sharding</strong> is what happens when that binder becomes so massive that your desk literally collapses under its weight. Now you buy 4 separate filing cabinets placed in different rooms. Cabinet 1 holds clients A–F, Cabinet 2 holds G–L, and so on. Now 4 clerks can search for files at the exact same time without bumping into each other. But you now need a master map at the front desk telling everyone which room to visit!
+          </div>
+
+          <h3>1. Partitioning: Slicing One Giant Table Inside One Database</h3>
+          <p>
+            When a single table grows too large, its B-tree indexes no longer fit inside RAM. Every lookup is forced to hit the physical SSD, destroying query throughput.<br><br>
+            With <strong>table partitioning</strong> (like PostgreSQL Declarative Partitioning), you divide one logical table into smaller physical tables on the <em>same machine</em>. You can partition by range (e.g., one sub-table per month) or by list (e.g., by country code).<br><br>
+            The biggest win is <strong>Partition Pruning</strong>: if you query <code>WHERE created_at &gt;= '2026-09-01'</code>, the query planner completely ignores 95% of the data on disk and only scans the September partition. Your application code never knows the difference—it still queries the main table name.
+          </p>
+
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 680 180" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="10" width="660" height="160" rx="10" fill="#0f1118" stroke="rgba(255,255,255,0.1)" stroke-dasharray="3,3" />
+              <rect x="25" y="25" width="295" height="130" rx="8" fill="#151822" stroke="#38bdf8" stroke-width="1.2" />
+              <text x="172" y="48" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">PARTITIONING (1 Physical Server)</text>
+              <rect x="40" y="60" width="265" height="22" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.1)" />
+              <text x="172" y="75" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="9" text-anchor="middle">Logical Table: &quot;orders&quot;</text>
+              <rect x="40" y="90" width="82" height="26" rx="4" fill="rgba(56,189,248,0.1)" stroke="#38bdf8" />
+              <text x="81" y="106" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8.5" text-anchor="middle">p_2024</text>
+              <rect x="131" y="90" width="82" height="26" rx="4" fill="rgba(56,189,248,0.1)" stroke="#38bdf8" />
+              <text x="172" y="106" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8.5" text-anchor="middle">p_2025</text>
+              <rect x="223" y="90" width="82" height="26" rx="4" fill="rgba(52,211,153,0.15)" stroke="#34d399" />
+              <text x="264" y="106" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="bold" text-anchor="middle">p_2026 (Hit)</text>
+              <text x="172" y="138" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="9.5" text-anchor="middle">Partition Pruning skips unneeded slices</text>
+              <line x1="340" y1="25" x2="340" y2="155" stroke="rgba(255,255,255,0.15)" stroke-dasharray="2,2" />
+              <rect x="360" y="25" width="295" height="130" rx="8" fill="#151822" stroke="#34d399" stroke-width="1.2" />
+              <text x="507" y="48" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">SHARDING (Multiple Servers)</text>
+              <rect x="375" y="60" width="265" height="22" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.1)" />
+              <text x="507" y="75" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="9" text-anchor="middle">Router: hash(user_id) % 3</text>
+              <rect x="375" y="90" width="82" height="26" rx="4" fill="#1c202e" stroke="#64748b" />
+              <text x="416" y="106" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Node 1 (A-H)</text>
+              <rect x="466" y="90" width="82" height="26" rx="4" fill="rgba(52,211,153,0.15)" stroke="#34d399" />
+              <text x="507" y="106" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="bold" text-anchor="middle">Node 2 (I-P)</text>
+              <rect x="558" y="90" width="82" height="26" rx="4" fill="#1c202e" stroke="#64748b" />
+              <text x="599" y="106" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Node 3 (Q-Z)</text>
+              <text x="507" y="138" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="9.5" text-anchor="middle">Horizontal scale across independent disks</text>
+            </svg>
+          </div>
+
+          <h3>2. Sharding: Splitting Data Across Multiple Physical Servers</h3>
+          <p>
+            Partitioning works wonders until your single server runs out of disk space, CPU cores, or RAM bandwidth. You cannot buy an infinitely large computer.<br><br>
+            <strong>Sharding</strong> is horizontal scaling: you split your dataset across multiple independent database nodes (shards). Each shard runs its own database instance on its own server.<br><br>
+            • <strong>The Shard Key</strong>: A router or application logic uses a hash of the shard key (like <code>user_id</code>) to direct queries: <code>hash(user_id) % num_shards</code>.<br>
+            • <strong>The Catch</strong>: Cross-shard operations are painful. Running a <code>JOIN</code> or aggregations across multiple shards requires two-phase commits, distributed network round-trips, and high latency.
+          </p>
+
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            Always start with table partitioning on a single properly tuned database instance before jumping to sharding. Sharding introduces distributed transactions, complex resharding migrations, and cross-node network latency—only shard when a single machine’s hardware limits are genuinely exhausted.
+          </div>
+        </div>
+
+        <div class="ai-explainer-box">
+          <div class="ai-explainer-info">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
+          </div>
+          <div class="ai-btn-group">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-1')">
+              <i class="fa-solid fa-robot"></i> ChatGPT
+            </button>
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-1')">
+              <i class="fa-solid fa-brain"></i> Claude
+            </button>
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-1')">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
+            </button>
+          </div>
+        </div>
+
+        <div class="article-footer">
+          <span>Curated Tech Notes</span>
+          <span>Category: System Design & Databases</span>
+        </div>
+      </article>
+
+      <!-- Article 2: September 2, 2026 -->
+      <article class="article-card" id="post-2" data-category="ai" data-keywords="paged attention kv cache vllm llm inference gpu memory fragmentation virtual memory transformer serving">
         <div class="article-meta">
           <span class="article-tag">AI Infrastructure</span>
           <span class="article-tag">LLM Inference</span>
@@ -651,7 +751,7 @@ a {
             <svg class="diagram-svg" viewBox="0 0 680 175" xmlns="http://www.w3.org/2000/svg">
               <rect x="10" y="10" width="660" height="155" rx="10" fill="#0f1118" stroke="rgba(255,255,255,0.1)" stroke-dasharray="3,3" />
               <rect x="30" y="32" width="290" height="118" rx="8" fill="#151822" stroke="#ef4444" stroke-width="1.2" />
-              <text x="175" y="54" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size=\"11\" font-weight="bold" text-anchor="middle">NAIVE CONTIGUOUS ALLOCATION</text>
+              <text x="175" y="54" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="bold" text-anchor="middle">NAIVE CONTIGUOUS ALLOCATION</text>
               <rect x="45" y="68" width="85" height="24" rx="4" fill="rgba(52,211,153,0.15)" stroke="#34d399" />
               <text x="87" y="84" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="bold" text-anchor="middle">Tokens [1..20]</text>
               <rect x="135" y="68" width="170" height="24" rx="4" fill="rgba(239,68,68,0.1)" stroke="#ef4444" stroke-dasharray="3,3" />
@@ -692,13 +792,13 @@ a {
             <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
           </div>
           <div class="ai-btn-group">
-            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-1')">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-2')">
               <i class="fa-solid fa-robot"></i> ChatGPT
             </button>
-            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-1')">
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-2')">
               <i class="fa-solid fa-brain"></i> Claude
             </button>
-            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-1')">
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-2')">
               <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
             </button>
           </div>
@@ -710,8 +810,8 @@ a {
         </div>
       </article>
 
-      <!-- Article 2: September 1, 2026 -->
-      <article class="article-card" id="post-2" data-category="system-design" data-keywords="rate limiting redis token bucket system design backend scaling distributed systems api gateway">
+      <!-- Article 3: September 1, 2026 -->
+      <article class="article-card" id="post-3" data-category="system-design" data-keywords="rate limiting redis token bucket system design backend scaling distributed systems api gateway">
         <div class="article-meta">
           <span class="article-tag">System Design</span>
           <span class="article-tag">Backend Infrastructure</span>
@@ -783,13 +883,13 @@ a {
             <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
           </div>
           <div class="ai-btn-group">
-            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-2')">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-3')">
               <i class="fa-solid fa-robot"></i> ChatGPT
             </button>
-            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-2')">
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-3')">
               <i class="fa-solid fa-brain"></i> Claude
             </button>
-            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-2')">
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-3')">
               <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
             </button>
           </div>
@@ -801,8 +901,8 @@ a {
         </div>
       </article>
 
-      <!-- Article 3: August 31, 2026 -->
-      <article class="article-card" id="post-3" data-category="system-design" data-keywords="redis caching c10k cache stampede distributed systems latency backend system design">
+      <!-- Article 4: August 31, 2026 -->
+      <article class="article-card" id="post-4" data-category="system-design" data-keywords="redis caching c10k cache stampede distributed systems latency backend system design">
         <div class="article-meta">
           <span class="article-tag">System Design</span>
           <span class="article-tag">Distributed Caching</span>
@@ -880,13 +980,13 @@ a {
             <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
           </div>
           <div class="ai-btn-group">
-            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-3')">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-4')">
               <i class="fa-solid fa-robot"></i> ChatGPT
             </button>
-            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-3')">
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-4')">
               <i class="fa-solid fa-brain"></i> Claude
             </button>
-            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-3')">
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-4')">
               <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
             </button>
           </div>
@@ -898,8 +998,8 @@ a {
         </div>
       </article>
 
-      <!-- Article 4: August 30, 2026 -->
-      <article class="article-card" id="post-4" data-category="ai" data-keywords="speculative decoding llm inference vllm gpu memory bandwidth latency ai">
+      <!-- Article 5: August 30, 2026 -->
+      <article class="article-card" id="post-5" data-category="ai" data-keywords="speculative decoding llm inference vllm gpu memory bandwidth latency ai">
         <div class="article-meta">
           <span class="article-tag">AI Infrastructure</span>
           <span class="article-date"><i class="fa-regular fa-calendar"></i> August 30, 2026</span>
@@ -968,13 +1068,13 @@ a {
             <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
           </div>
           <div class="ai-btn-group">
-            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-4')">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-5')">
               <i class="fa-solid fa-robot"></i> ChatGPT
             </button>
-            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-4')">
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-5')">
               <i class="fa-solid fa-brain"></i> Claude
             </button>
-            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-4')">
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-5')">
               <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
             </button>
           </div>
@@ -986,8 +1086,8 @@ a {
         </div>
       </article>
 
-      <!-- Article 5: August 29, 2026 -->
-      <article class="article-card" id="post-5" data-category="databases" data-keywords="clickhouse postgresql databases columnar oltp olap sql data engineering">
+      <!-- Article 6: August 29, 2026 -->
+      <article class="article-card" id="post-6" data-category="databases" data-keywords="clickhouse postgresql databases columnar oltp olap sql data engineering">
         <div class="article-meta">
           <span class="article-tag">System Design</span>
           <span class="article-tag">Databases</span>
@@ -1052,13 +1152,13 @@ a {
             <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
           </div>
           <div class="ai-btn-group">
-            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-5')">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-6')">
               <i class="fa-solid fa-robot"></i> ChatGPT
             </button>
-            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-5')">
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-6')">
               <i class="fa-solid fa-brain"></i> Claude
             </button>
-            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-5')">
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-6')">
               <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
             </button>
           </div>
