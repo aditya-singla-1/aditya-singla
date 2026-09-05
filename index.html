@@ -591,7 +591,7 @@ a {
 /* Education & Certs */
 .edu-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 1.25rem;
 }
 
@@ -1372,6 +1372,28 @@ a {
         </div>
 
         <div class="edu-card">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+            <div>
+              <div class="edu-card-title">Oracle Certified Associate</div>
+              <div class="edu-card-sub">Agentic AI Certified Foundations Associate</div>
+            </div>
+            <span class="badge badge-emerald" style="font-size: 0.72rem; white-space: nowrap;"><i class="fa-solid fa-certificate"></i> Verified</span>
+          </div>
+          <span class="edu-card-date">Oracle University · 2026</span>
+          <p class="edu-card-desc" style="margin-bottom: 1.15rem;">
+            Certified in agentic AI architectures, LangChain, OpenAI Agents SDK, Model Context Protocol (MCP) servers, OCI Enterprise AI Agents, and Oracle AI Database agentic workflows.
+          </p>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <a href="https://catalog-education.oracle.com/ords/certview/sharebadge?id=34A6573E66FFB54BA35A95B92B12C441EC887B555878EBE38B51A9B31B317B94" target="_blank" rel="noopener noreferrer" class="contact-action-btn" style="color: var(--text-brand); border-color: rgba(56, 189, 248, 0.3);">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> Verify Badge
+            </a>
+            <a href="assets/Oracle_Aditya_Certificate.pdf" target="_blank" class="contact-action-btn">
+              <i class="fa-regular fa-file-pdf"></i> View PDF
+            </a>
+          </div>
+        </div>
+
+        <div class="edu-card">
           <div class="edu-card-title">Professional Honors & Certifications</div>
           <div class="edu-card-sub">Industry Excellence & Specialized Training</div>
           <span class="edu-card-date">Apeiro Digital · IBM · Coursera</span>
@@ -1401,14 +1423,14 @@ a {
               <div class="contact-row-icon" style="color: #ea4335;"><i class="fa-brands fa-google"></i></div>
               <div>
                 <div class="contact-row-label">Gmail / Email</div>
-                <div class="contact-row-value">adityasingla505@gmail.com</div>
+                <div class="contact-row-value">aditya.singla.techie@gmail.com</div>
               </div>
             </div>
             <div style="display: flex; gap: 8px;">
-              <a href="https://mail.google.com/mail/?view=cm&fs=1&to=adityasingla505@gmail.com" target="_blank" class="contact-action-btn">
+              <a href="https://mail.google.com/mail/?view=cm&fs=1&to=aditya.singla.techie@gmail.com" target="_blank" class="contact-action-btn">
                 <i class="fa-solid fa-arrow-up-right-from-square"></i> Compose
               </a>
-              <button class="contact-action-btn" onclick="copyToClipboard('adityasingla505@gmail.com', 'Email')">
+              <button class="contact-action-btn" onclick="copyToClipboard('aditya.singla.techie@gmail.com', 'Email')">
                 <i class="fa-regular fa-copy"></i>
               </button>
             </div>
@@ -1494,7 +1516,7 @@ a {
         © 2026 Aditya Singla. Software & Data Engineering.
       </div>
       <div class="footer-links">
-        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=adityasingla505@gmail.com" target="_blank" class="btn-icon" title="Gmail"><i class="fa-brands fa-google"></i></a>
+        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=aditya.singla.techie@gmail.com" target="_blank" class="btn-icon" title="Gmail"><i class="fa-brands fa-google"></i></a>
         <a href="https://wa.me/?text=Hi%20Aditya" target="_blank" class="btn-icon" title="WhatsApp (@aditya.singla.8)"><i class="fa-brands fa-whatsapp"></i></a>
         <a href="https://www.linkedin.com/in/aditya---singla/" target="_blank" class="btn-icon" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
         <a href="https://github.com/aditya-singla-1" target="_blank" class="btn-icon" title="GitHub"><i class="fa-brands fa-github"></i></a>

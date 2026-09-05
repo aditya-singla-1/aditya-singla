@@ -272,12 +272,52 @@ a {
   background: linear-gradient(180deg, rgba(56, 189, 248, 0.03) 0%, var(--bg-surface) 100%);
 }
 
+.article-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.article-header-top .article-meta {
+  margin-bottom: 0;
+}
+
 .article-meta {
   display: flex;
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-  margin-bottom: 1rem;
+}
+
+.article-share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-smooth);
+}
+
+.article-share-btn:hover {
+  color: var(--text-brand);
+  border-color: rgba(56, 189, 248, 0.4);
+  background: rgba(56, 189, 248, 0.08);
+  transform: translateY(-1px);
+}
+
+.article-share-btn.copied {
+  color: var(--text-emerald);
+  border-color: rgba(52, 211, 153, 0.4);
+  background: rgba(52, 211, 153, 0.1);
 }
 
 .article-date {
@@ -616,11 +656,16 @@ a {
 
       <!-- Article 1: September 5, 2026 -->
       <article class="article-card featured" id="post-1" data-category="system-design" data-keywords="rabbitmq vs kafka message queues event streams amqp append only log zero copy consumer groups distributed systems backend architecture sendfile page cache">
-        <div class="article-meta">
-          <span class="article-tag">System Design</span>
-          <span class="article-tag">Distributed Messaging</span>
-          <span class="article-date"><i class="fa-regular fa-calendar"></i> September 5, 2026</span>
-          <span class="article-read-time"><i class="fa-regular fa-clock"></i> 5 min read</span>
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">System Design</span>
+            <span class="article-tag">Distributed Messaging</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> September 5, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 5 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('post-1', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
         </div>
 
         <h2 class="article-title">
@@ -734,11 +779,16 @@ a {
 
       <!-- Article 2: September 4, 2026 -->
       <article class="article-card" id="post-2" data-category="ai" data-keywords="llm quantization fp16 to int4 awq gptq bitsandbytes model compression vram reduction gpu inference memory footprint deep learning">
-        <div class="article-meta">
-          <span class="article-tag">AI Infrastructure</span>
-          <span class="article-tag">Model Compression</span>
-          <span class="article-date"><i class="fa-regular fa-calendar"></i> September 4, 2026</span>
-          <span class="article-read-time"><i class="fa-regular fa-clock"></i> 4 min read</span>
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">AI Infrastructure</span>
+            <span class="article-tag">Model Compression</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> September 4, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 4 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('post-2', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
         </div>
 
         <h2 class="article-title">
@@ -841,11 +891,16 @@ a {
 
       <!-- Article 3: September 3, 2026 -->
       <article class="article-card" id="post-3" data-category="system-design" data-keywords="database sharding table partitioning postgresql scaling distributed databases system design horizontal scaling backend architecture">
-        <div class="article-meta">
-          <span class="article-tag">System Design</span>
-          <span class="article-tag">Database Architecture</span>
-          <span class="article-date"><i class="fa-regular fa-calendar"></i> September 3, 2026</span>
-          <span class="article-read-time"><i class="fa-regular fa-clock"></i> 4 min read</span>
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">System Design</span>
+            <span class="article-tag">Database Architecture</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> September 3, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 4 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('post-3', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
         </div>
 
         <h2 class="article-title">
@@ -941,11 +996,16 @@ a {
 
       <!-- Article 4: September 2, 2026 -->
       <article class="article-card" id="post-4" data-category="ai" data-keywords="paged attention kv cache vllm llm inference gpu memory fragmentation virtual memory transformer serving">
-        <div class="article-meta">
-          <span class="article-tag">AI Infrastructure</span>
-          <span class="article-tag">LLM Inference</span>
-          <span class="article-date"><i class="fa-regular fa-calendar"></i> September 2, 2026</span>
-          <span class="article-read-time"><i class="fa-regular fa-clock"></i> 4 min read</span>
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">AI Infrastructure</span>
+            <span class="article-tag">LLM Inference</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> September 2, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 4 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('post-4', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
         </div>
 
         <h2 class="article-title">
@@ -1037,11 +1097,16 @@ a {
 
       <!-- Article 5: September 1, 2026 -->
       <article class="article-card" id="post-5" data-category="system-design" data-keywords="rate limiting redis token bucket system design backend scaling distributed systems api gateway">
-        <div class="article-meta">
-          <span class="article-tag">System Design</span>
-          <span class="article-tag">Backend Infrastructure</span>
-          <span class="article-date"><i class="fa-regular fa-calendar"></i> September 1, 2026</span>
-          <span class="article-read-time"><i class="fa-regular fa-clock"></i> 4 min read</span>
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">System Design</span>
+            <span class="article-tag">Backend Infrastructure</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> September 1, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 4 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('post-5', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
         </div>
 
         <h2 class="article-title">
@@ -1128,11 +1193,16 @@ a {
 
       <!-- Article 6: August 31, 2026 -->
       <article class="article-card" id="post-6" data-category="system-design" data-keywords="redis caching c10k cache stampede distributed systems latency backend system design">
-        <div class="article-meta">
-          <span class="article-tag">System Design</span>
-          <span class="article-tag">Distributed Caching</span>
-          <span class="article-date"><i class="fa-regular fa-calendar"></i> August 31, 2026</span>
-          <span class="article-read-time"><i class="fa-regular fa-clock"></i> 5 min read</span>
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">System Design</span>
+            <span class="article-tag">Distributed Caching</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> August 31, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 5 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('post-6', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
         </div>
 
         <h2 class="article-title">
@@ -1225,10 +1295,15 @@ a {
 
       <!-- Article 7: August 30, 2026 -->
       <article class="article-card" id="post-7" data-category="ai" data-keywords="speculative decoding llm inference vllm gpu memory bandwidth latency ai">
-        <div class="article-meta">
-          <span class="article-tag">AI Infrastructure</span>
-          <span class="article-date"><i class="fa-regular fa-calendar"></i> August 30, 2026</span>
-          <span class="article-read-time"><i class="fa-regular fa-clock"></i> 4 min read</span>
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">AI Infrastructure</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> August 30, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 4 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('post-7', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
         </div>
 
         <h2 class="article-title">
@@ -1313,11 +1388,16 @@ a {
 
       <!-- Article 8: August 29, 2026 -->
       <article class="article-card" id="post-8" data-category="databases" data-keywords="clickhouse postgresql databases columnar oltp olap sql data engineering">
-        <div class="article-meta">
-          <span class="article-tag">System Design</span>
-          <span class="article-tag">Databases</span>
-          <span class="article-date"><i class="fa-regular fa-calendar"></i> August 29, 2026</span>
-          <span class="article-read-time"><i class="fa-regular fa-clock"></i> 5 min read</span>
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">System Design</span>
+            <span class="article-tag">Databases</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> August 29, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 5 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('post-8', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
         </div>
 
         <h2 class="article-title">
@@ -1414,7 +1494,7 @@ a {
         © 2026 Aditya Singla. Software & Data Engineering.
       </div>
       <div class="footer-links">
-        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=adityasingla505@gmail.com" target="_blank" class="btn-icon" title="Gmail"><i class="fa-brands fa-google"></i></a>
+        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=aditya.singla.techie@gmail.com" target="_blank" class="btn-icon" title="Gmail"><i class="fa-brands fa-google"></i></a>
         <a href="https://wa.me/?text=Hi%20Aditya" target="_blank" class="btn-icon" title="WhatsApp (@aditya.singla.8)"><i class="fa-brands fa-whatsapp"></i></a>
         <a href="https://www.linkedin.com/in/aditya---singla/" target="_blank" class="btn-icon" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
         <a href="https://github.com/aditya-singla-1" target="_blank" class="btn-icon" title="GitHub"><i class="fa-brands fa-github"></i></a>
@@ -1467,6 +1547,68 @@ a {
         currentCategory = chip.getAttribute('data-category');
         filterArticles();
       });
+    });
+
+    // Article Share Handler
+    function shareArticle(articleId, event) {
+      if (event) event.stopPropagation();
+      const btn = event ? event.currentTarget : null;
+      const baseUrl = window.location.origin + window.location.pathname.replace(/\/+$/, '');
+      const shareUrl = `${baseUrl}/#${articleId}`;
+
+      const updateBtn = () => {
+        if (btn) {
+          const orig = btn.innerHTML;
+          btn.innerHTML = `<i class="fa-solid fa-check"></i> <span>Copied!</span>`;
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.innerHTML = orig;
+            btn.classList.remove('copied');
+          }, 2000);
+        }
+
+        const toast = document.getElementById('toast-msg');
+        if (toast) {
+          toast.innerHTML = `<i class="fa-solid fa-link"></i> Article link copied to clipboard!`;
+          toast.style.display = 'block';
+          setTimeout(() => { toast.style.display = 'none'; }, 2500);
+        }
+      };
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareUrl).then(updateBtn).catch(() => {
+          fallbackCopy(shareUrl);
+          updateBtn();
+        });
+      } else {
+        fallbackCopy(shareUrl);
+        updateBtn();
+      }
+    }
+
+    function fallbackCopy(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch(e) {}
+      document.body.removeChild(ta);
+    }
+
+    // Auto-scroll and highlight if URL contains article anchor (#post-X)
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.location.hash) {
+        const target = document.querySelector(window.location.hash);
+        if (target) {
+          setTimeout(() => {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            target.style.borderColor = 'rgba(56, 189, 248, 0.6)';
+            setTimeout(() => { target.style.borderColor = ''; }, 2500);
+          }, 350);
+        }
+      }
     });
 
     // AI Explainer Handler

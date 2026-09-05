@@ -86,7 +86,7 @@ if (contactForm) {
     const subject = document.getElementById('form-subject').value || 'Tech Solutions Discussion';
     const message = document.getElementById('form-message').value;
 
-    const mailtoUrl = `mailto:adityasingla505@gmail.com?subject=${encodeURIComponent(subject + ' - ' + name)}&body=${encodeURIComponent('From: ' + name + ' (' + email + ')\n\n' + message)}`;
+    const mailtoUrl = `mailto:aditya.singla.techie@gmail.com?subject=${encodeURIComponent(subject + ' - ' + name)}&body=${encodeURIComponent('From: ' + name + ' (' + email + ')\n\n' + message)}`;
     window.location.href = mailtoUrl;
     showToast('Redirecting to your mail client...');
     contactForm.reset();
