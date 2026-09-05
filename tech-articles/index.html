@@ -601,7 +601,7 @@ a {
           <input type="text" id="article-search" class="search-input" placeholder="Search tech articles, AI topics, keywords..." autocomplete="off">
         </div>
         <div class="filter-chips">
-          <button class="filter-chip active" data-category="all">All Articles (6)</button>
+          <button class="filter-chip active" data-category="all">All Articles (7)</button>
           <button class="filter-chip" data-category="ai">AI & LLM Infra</button>
           <button class="filter-chip" data-category="system-design">System Design</button>
           <button class="filter-chip" data-category="databases">Databases & Data Eng</button>
@@ -614,8 +614,115 @@ a {
   <main class="container">
     <div class="article-list" id="article-container">
 
-      <!-- Article 1: September 3, 2026 -->
-      <article class="article-card featured" id="post-1" data-category="system-design" data-keywords="database sharding table partitioning postgresql scaling distributed databases system design horizontal scaling backend architecture">
+      <!-- Article 1: September 4, 2026 -->
+      <article class="article-card featured" id="post-1" data-category="ai" data-keywords="llm quantization fp16 to int4 awq gptq bitsandbytes model compression vram reduction gpu inference memory footprint deep learning">
+        <div class="article-meta">
+          <span class="article-tag">AI Infrastructure</span>
+          <span class="article-tag">Model Compression</span>
+          <span class="article-date"><i class="fa-regular fa-calendar"></i> September 4, 2026</span>
+          <span class="article-read-time"><i class="fa-regular fa-clock"></i> 4 min read</span>
+        </div>
+
+        <h2 class="article-title">
+          LLM Quantization from FP16 to INT4: How to Fit a 70B Model on One GPU Without Breaking Its Brain
+        </h2>
+
+        <p class="article-summary">
+          Serving a 70B parameter model in full FP16 precision requires 140 GB of VRAM—forcing you onto multi-GPU enterprise clusters just to hold idle weights. Here is how INT4 block-wise quantization compresses model footprint by 75% while keeping reasoning accuracy intact.
+        </p>
+
+        <div class="article-body">
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: The 65,000-Shade Oil Studio vs. The 16-Color Pocket Palette
+            </div>
+            Imagine you are an oil painter hired to recreate a portrait. In full FP16 mode, your studio carries 65,536 individual glass jars of paint, each holding an infinitesimally distinct shade. Transporting this kit requires a heavy moving truck (140 GB of GPU VRAM for a 70B model), meaning you can never work from a standard mobile desk.<br><br>
+            Now someone gives you a pocket watercolor tin with only 16 discrete slots (numbers 0 to 15, matching 4-bit integers). If you naively snap every color on the portrait to the closest generic color across the entire painting, the human face turns into an unrecognizable cartoon smear.<br><br>
+            Modern <strong>grouped quantization (like AWQ or GPTQ)</strong> solves this by dividing the canvas into tiny 10×10 cm squares (groups of 128 weights). For a patch of blue sky, slots 0 through 15 are calibrated with a tiny multiplier to represent 16 subtle shades of azure. For the cheek, those same 16 slots represent 16 subtle peach tones. And for the 1% of critical brushstrokes defining the subject’s eyes (the outlier weights), the painter preserves the original precision jar. The moving truck shrinks into a backpack you carry in one hand (35 GB), it fits on a single workstation GPU, and the viewer standing two feet away cannot tell the difference!
+          </div>
+
+          <h3>1. The VRAM Bottleneck: Why FP16 Demands 140 GB Just to Stand Idle</h3>
+          <p>
+            Every parameter in standard half-precision floating point (FP16 or BF16) occupies 16 bits (2 bytes): 1 sign bit, 5 exponent bits, and 10 mantissa bits.<br><br>
+            For a 70-billion parameter model, storing purely the weights in GPU memory requires:<br>
+            <code>70 × 10^9 parameters × 2 bytes = 140 GB VRAM</code><br><br>
+            This 140 GB baseline does not include the Key-Value (KV) cache for conversation context or activation buffers. To serve this model without quantization, you must link two 80 GB Nvidia H100 or A100 GPUs across high-speed NVLink bridges.<br><br>
+            In contrast, <strong>INT4 representation</strong> packs each parameter into 4 bits (0.5 bytes). The identical 70B model drops to:<br>
+            <code>70 × 10^9 parameters × 0.5 bytes ≈ 35 GB VRAM</code><br><br>
+            With ~3 GB of metadata for scale factors, the entire model fits comfortably inside 38–40 GB of VRAM—meaning you can host it locally on a single workstation card or two consumer RTX 3090/4090 GPUs.
+          </p>
+
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 680 180" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="10" width="660" height="160" rx="10" fill="#0f1118" stroke="rgba(255,255,255,0.1)" stroke-dasharray="3,3" />
+              <rect x="25" y="25" width="180" height="130" rx="8" fill="#151822" stroke="#ef4444" stroke-width="1.2" />
+              <text x="115" y="48" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="bold" text-anchor="middle">FP16 UNCOMPRESSED</text>
+              <rect x="40" y="60" width="150" height="22" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.1)" />
+              <text x="115" y="75" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8.5" text-anchor="middle">16 bits / param (2 Bytes)</text>
+              <rect x="40" y="90" width="150" height="32" rx="4" fill="rgba(239,68,68,0.12)" stroke="#ef4444" />
+              <text x="115" y="105" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="bold" text-anchor="middle">70B Model = 140 GB</text>
+              <text x="115" y="117" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Requires 2x H100 80GB</text>
+              <text x="115" y="143" fill="#ef4444" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" text-anchor="middle">Prohibitive Server Cost</text>
+              <line x1="215" y1="90" x2="245" y2="90" stroke="#38bdf8" stroke-width="2" />
+              <rect x="245" y="25" width="190" height="130" rx="8" fill="#151822" stroke="#38bdf8" stroke-width="1.2" />
+              <text x="340" y="48" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="bold" text-anchor="middle">BLOCK QUANTIZER</text>
+              <rect x="255" y="60" width="170" height="22" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.1)" />
+              <text x="340" y="75" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Group Size = 128 weights</text>
+              <rect x="255" y="88" width="170" height="22" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.1)" />
+              <text x="340" y="103" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">S = (Max - Min) / 15</text>
+              <rect x="255" y="116" width="170" height="22" rx="4" fill="rgba(56,189,248,0.1)" stroke="#38bdf8" />
+              <text x="340" y="131" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">AWQ Salient Outlier Lock</text>
+              <line x1="445" y1="90" x2="475" y2="90" stroke="#34d399" stroke-width="2" />
+              <rect x="475" y="25" width="180" height="130" rx="8" fill="#151822" stroke="#34d399" stroke-width="1.2" />
+              <text x="565" y="48" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="bold" text-anchor="middle">INT4 WEIGHT-ONLY</text>
+              <rect x="490" y="60" width="150" height="22" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.1)" />
+              <text x="565" y="75" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8.5" text-anchor="middle">4 bits / param (0.5 Bytes)</text>
+              <rect x="490" y="90" width="150" height="32" rx="4" fill="rgba(52,211,153,0.15)" stroke="#34d399" />
+              <text x="565" y="105" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="bold" text-anchor="middle">70B Model ≈ 35 GB</text>
+              <text x="565" y="117" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Runs on 1x Workstation GPU</text>
+              <text x="565" y="143" fill="#34d399" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" text-anchor="middle">75% VRAM Reduction · 3x Bus Speed</text>
+            </svg>
+          </div>
+
+          <h3>2. How Linear Quantization Works: Scales, Offsets, and Grouping</h3>
+          <p>
+            How do you project continuous floating-point weights spanning <code>[-2.4, +3.1]</code> into 16 discrete integers from 0 to 15 without destroying the model's logic?<br><br>
+            • <strong>The Scale Factor ($S$) &amp; Zero-Point ($Z$)</strong>: We calculate a scale factor $S = (W_{\max} - W_{\min}) / 15$. Each float weight $W$ is mapped to an integer: <code>W_q = round(W / S) + Z</code>. During computation, it dequantizes back: <code>W ≈ (W_q - Z) × S</code>.<br>
+            • <strong>Block-wise Grouping (Group Size 128)</strong>: Calculating a single scale factor for an entire layer fails because a single outlier weight (e.g., +14.2) squashes all other weights into zero. Instead, modern algorithms divide weights into independent blocks of 128 numbers, giving each block its own dedicated FP16 scale factor. This adds less than 3% memory overhead while preventing outlier distortion.<br>
+            • <strong>Salient Weight Protection (AWQ)</strong>: Activation-aware Weight Quantization observes that roughly 1% of weights handle 90% of attention signaling. By identifying and protecting these critical weights from aggressive truncation, perplexity degradation remains virtually zero.
+          </p>
+
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            Quantization is not crude truncation—it is statistical calibration. By using block-wise grouping (group size 128) and protecting salient outlier weights (AWQ), INT4 reduces GPU memory requirements by 75% with virtually zero loss in reasoning quality. For token generation, W4A16 weight-only quantization accelerates inference by dramatically reducing memory bus saturation.
+          </div>
+        </div>
+
+        <div class="ai-explainer-box">
+          <div class="ai-explainer-info">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
+          </div>
+          <div class="ai-btn-group">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-1')">
+              <i class="fa-solid fa-robot"></i> ChatGPT
+            </button>
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-1')">
+              <i class="fa-solid fa-brain"></i> Claude
+            </button>
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-1')">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
+            </button>
+          </div>
+        </div>
+
+        <div class="article-footer">
+          <span>Curated Tech Notes</span>
+          <span>Category: AI Infrastructure & LLM Serving</span>
+        </div>
+      </article>
+
+      <!-- Article 2: September 3, 2026 -->
+      <article class="article-card" id="post-2" data-category="system-design" data-keywords="database sharding table partitioning postgresql scaling distributed databases system design horizontal scaling backend architecture">
         <div class="article-meta">
           <span class="article-tag">System Design</span>
           <span class="article-tag">Database Architecture</span>
@@ -696,13 +803,13 @@ a {
             <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
           </div>
           <div class="ai-btn-group">
-            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-1')">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-2')">
               <i class="fa-solid fa-robot"></i> ChatGPT
             </button>
-            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-1')">
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-2')">
               <i class="fa-solid fa-brain"></i> Claude
             </button>
-            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-1')">
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-2')">
               <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
             </button>
           </div>
@@ -714,8 +821,8 @@ a {
         </div>
       </article>
 
-      <!-- Article 2: September 2, 2026 -->
-      <article class="article-card" id="post-2" data-category="ai" data-keywords="paged attention kv cache vllm llm inference gpu memory fragmentation virtual memory transformer serving">
+      <!-- Article 3: September 2, 2026 -->
+      <article class="article-card" id="post-3" data-category="ai" data-keywords="paged attention kv cache vllm llm inference gpu memory fragmentation virtual memory transformer serving">
         <div class="article-meta">
           <span class="article-tag">AI Infrastructure</span>
           <span class="article-tag">LLM Inference</span>
@@ -792,13 +899,13 @@ a {
             <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
           </div>
           <div class="ai-btn-group">
-            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-2')">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-3')">
               <i class="fa-solid fa-robot"></i> ChatGPT
             </button>
-            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-2')">
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-3')">
               <i class="fa-solid fa-brain"></i> Claude
             </button>
-            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-2')">
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-3')">
               <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
             </button>
           </div>
@@ -810,8 +917,8 @@ a {
         </div>
       </article>
 
-      <!-- Article 3: September 1, 2026 -->
-      <article class="article-card" id="post-3" data-category="system-design" data-keywords="rate limiting redis token bucket system design backend scaling distributed systems api gateway">
+      <!-- Article 4: September 1, 2026 -->
+      <article class="article-card" id="post-4" data-category="system-design" data-keywords="rate limiting redis token bucket system design backend scaling distributed systems api gateway">
         <div class="article-meta">
           <span class="article-tag">System Design</span>
           <span class="article-tag">Backend Infrastructure</span>
@@ -883,13 +990,13 @@ a {
             <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
           </div>
           <div class="ai-btn-group">
-            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-3')">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-4')">
               <i class="fa-solid fa-robot"></i> ChatGPT
             </button>
-            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-3')">
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-4')">
               <i class="fa-solid fa-brain"></i> Claude
             </button>
-            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-3')">
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-4')">
               <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
             </button>
           </div>
@@ -901,8 +1008,8 @@ a {
         </div>
       </article>
 
-      <!-- Article 4: August 31, 2026 -->
-      <article class="article-card" id="post-4" data-category="system-design" data-keywords="redis caching c10k cache stampede distributed systems latency backend system design">
+      <!-- Article 5: August 31, 2026 -->
+      <article class="article-card" id="post-5" data-category="system-design" data-keywords="redis caching c10k cache stampede distributed systems latency backend system design">
         <div class="article-meta">
           <span class="article-tag">System Design</span>
           <span class="article-tag">Distributed Caching</span>
@@ -980,13 +1087,13 @@ a {
             <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
           </div>
           <div class="ai-btn-group">
-            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-4')">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-5')">
               <i class="fa-solid fa-robot"></i> ChatGPT
             </button>
-            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-4')">
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-5')">
               <i class="fa-solid fa-brain"></i> Claude
             </button>
-            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-4')">
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-5')">
               <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
             </button>
           </div>
@@ -998,8 +1105,8 @@ a {
         </div>
       </article>
 
-      <!-- Article 5: August 30, 2026 -->
-      <article class="article-card" id="post-5" data-category="ai" data-keywords="speculative decoding llm inference vllm gpu memory bandwidth latency ai">
+      <!-- Article 6: August 30, 2026 -->
+      <article class="article-card" id="post-6" data-category="ai" data-keywords="speculative decoding llm inference vllm gpu memory bandwidth latency ai">
         <div class="article-meta">
           <span class="article-tag">AI Infrastructure</span>
           <span class="article-date"><i class="fa-regular fa-calendar"></i> August 30, 2026</span>
@@ -1068,13 +1175,13 @@ a {
             <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
           </div>
           <div class="ai-btn-group">
-            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-5')">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-6')">
               <i class="fa-solid fa-robot"></i> ChatGPT
             </button>
-            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-5')">
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-6')">
               <i class="fa-solid fa-brain"></i> Claude
             </button>
-            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-5')">
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-6')">
               <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
             </button>
           </div>
@@ -1086,8 +1193,8 @@ a {
         </div>
       </article>
 
-      <!-- Article 6: August 29, 2026 -->
-      <article class="article-card" id="post-6" data-category="databases" data-keywords="clickhouse postgresql databases columnar oltp olap sql data engineering">
+      <!-- Article 7: August 29, 2026 -->
+      <article class="article-card" id="post-7" data-category="databases" data-keywords="clickhouse postgresql databases columnar oltp olap sql data engineering">
         <div class="article-meta">
           <span class="article-tag">System Design</span>
           <span class="article-tag">Databases</span>
@@ -1152,13 +1259,13 @@ a {
             <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
           </div>
           <div class="ai-btn-group">
-            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-6')">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'post-7')">
               <i class="fa-solid fa-robot"></i> ChatGPT
             </button>
-            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-6')">
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'post-7')">
               <i class="fa-solid fa-brain"></i> Claude
             </button>
-            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-6')">
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'post-7')">
               <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
             </button>
           </div>
