@@ -641,7 +641,7 @@ a {
           <input type="text" id="article-search" class="search-input" placeholder="Search tech articles, AI topics, keywords..." autocomplete="off">
         </div>
         <div class="filter-chips">
-          <button class="filter-chip active" data-category="all">All Articles (8)</button>
+          <button class="filter-chip active" data-category="all">All Articles (9)</button>
           <button class="filter-chip" data-category="ai">AI & LLM Infra</button>
           <button class="filter-chip" data-category="system-design">System Design</button>
           <button class="filter-chip" data-category="databases">Databases & Data Eng</button>
@@ -654,8 +654,130 @@ a {
   <main class="container">
     <div class="article-list" id="article-container">
 
-      <!-- Article 1: September 5, 2026 -->
-      <article class="article-card featured" id="rabbitmq-vs-kafka" data-category="system-design" data-keywords="rabbitmq vs kafka message queues event streams amqp append only log zero copy consumer groups distributed systems backend architecture sendfile page cache">
+      <!-- Article 1: September 6, 2026 -->
+      <article class="article-card featured" id="vector-embeddings-rag" data-category="ai" data-keywords="rag retrieval augmented generation vector embeddings hnsw cosine similarity semantic search vector databases llm chunking dense retrieval reranking">
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">AI Engineering</span>
+            <span class="article-tag">Vector Search</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> September 6, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 5 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('vector-embeddings-rag', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
+        </div>
+
+        <h2 class="article-title">
+          How RAG &amp; Vector Embeddings Actually Work: From Text Chunks to High-Dimensional Geometry
+        </h2>
+
+        <p class="article-summary">
+          LLMs sound confident even when they make things up, and their static training cutoffs leave them blind to private company data. Here is how Retrieval-Augmented Generation (RAG) and dense vector embeddings translate human language into geometric coordinates to fetch facts with sub-50ms latency.
+        </p>
+
+        <div class="article-body">
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: The Exact-Word Librarian vs. The Master Sommelier's Flavor Room
+            </div>
+            Imagine walking into a traditional library and asking: <em>'Do you have something to cure a throbbing temple ache?'</em> An old-school keyword librarian (like SQL <code>LIKE '%headache%'</code> or basic full-text search) scans books looking for that exact sequence of letters. If the authoritative medical guide only says <em>'aspirin relieves cephalalgia'</em>, the librarian shrugs and claims nothing exists. Zero literal word overlap means zero results.<br><br>
+            Now imagine a master sommelier in an interactive wine tasting cellar. Instead of memorizing exact bottle labels, the sommelier rates every bottle along 1,536 sensory dials: sweetness, acidity, oakiness, tannin level, and floral aroma. When you say, <em>'I want a crisp, bright pour that pairs with grilled sea bass'</em>, you aren't naming a grape. The sommelier instantly maps your description to a coordinate point in flavor space. In that room, a crisp Chablis sits just millimeters away from your point, while a heavy peaty whiskey sits across the building. <strong>Vector embeddings</strong> do the exact same thing for human thoughts—they plot every paragraph into a mathematical room where concepts with similar meanings sit right next to each other, regardless of what specific words you used!
+          </div>
+
+          <h3>1. What is an Embedding? Turning Sentences into 1,536-Dimensional Vectors</h3>
+          <p>
+            A vector embedding is an array of floating-point numbers produced by a specialized transformer encoder (such as OpenAI <code>text-embedding-3-small</code> or open-source <code>BGE-large</code>). When you pass a 300-word paragraph through the model, it doesn't return words—it outputs a fixed-length list of numbers (e.g., 1,536 floats like <code>[0.014, -0.082, 0.451, ..., 0.119]</code>).<br><br>
+            • <strong>Semantic Directions</strong>: Each dimension in this vector captures latent features learned across billions of text pairs. Concepts that share conceptual relationships end up pointing in almost identical directions in space.<br>
+            • <strong>Cosine Similarity Over Dot Product</strong>: To test whether a user's question matches a stored document, we compute the cosine similarity between their normalized vectors: $\cos(\theta) = \frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\| \|\mathbf{v}\|}$. A score of 1.0 indicates identical directional meaning, 0.0 indicates complete orthogonality (unrelated concepts), and -1.0 represents exact polar opposites. Because vectors are typically normalized to unit length, this reduces to a blazing-fast vector dot product.
+          </p>
+
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 680 185" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="10" width="660" height="165" rx="10" fill="#0f1118" stroke="rgba(255,255,255,0.1)" stroke-dasharray="3,3" />
+              <rect x="25" y="22" width="195" height="140" rx="8" fill="#151822" stroke="#38bdf8" stroke-width="1.2" />
+              <text x="122" y="44" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">1. QUERY &amp; EMBEDDING</text>
+              <rect x="38" y="56" width="169" height="28" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" />
+              <text x="122" y="69" fill="#f8fafc" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">User: 'How do refunds work?'</text>
+              <text x="122" y="80" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-size="7" text-anchor="middle">(Raw Human Text)</text>
+              <line x1="122" y1="84" x2="122" y2="95" stroke="#38bdf8" stroke-width="1.2" />
+              <rect x="38" y="95" width="169" height="35" rx="4" fill="rgba(56,189,248,0.12)" stroke="#38bdf8" />
+              <text x="122" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Embedding Model (1536-D)</text>
+              <text x="122" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">[0.14, -0.88, 0.42, ...]</text>
+              <text x="122" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Dense Geometric Coordinates</text>
+              <line x1="220" y1="92" x2="240" y2="92" stroke="#a78bfa" stroke-width="2" />
+              <polygon points="240,92 233,88 233,96" fill="#a78bfa" />
+              <rect x="240" y="22" width="200" height="140" rx="8" fill="#151822" stroke="#a78bfa" stroke-width="1.2" />
+              <text x="340" y="44" fill="#a78bfa" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">2. VECTOR DB (HNSW INDEX)</text>
+              <rect x="252" y="56" width="176" height="32" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" />
+              <text x="340" y="70" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Multi-Layer Small World Graph</text>
+              <text x="340" y="82" fill="#a78bfa" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">O(log N) Traversal &lt; 15ms</text>
+              <rect x="252" y="94" width="176" height="36" rx="4" fill="rgba(167,139,250,0.12)" stroke="#a78bfa" />
+              <text x="340" y="108" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Cosine Similarity: cos(&theta;) = 0.94</text>
+              <text x="340" y="122" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Top-K Chunks Retrieved &#x2714;</text>
+              <text x="340" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Dense Approximate Match</text>
+              <line x1="440" y1="92" x2="460" y2="92" stroke="#34d399" stroke-width="2" />
+              <polygon points="460,92 453,88 453,96" fill="#34d399" />
+              <rect x="460" y="22" width="195" height="140" rx="8" fill="#151822" stroke="#34d399" stroke-width="1.2" />
+              <text x="557" y="44" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">3. AUGMENTED GENERATION</text>
+              <rect x="472" y="56" width="171" height="32" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" />
+              <text x="557" y="70" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">[System] + [Chunk #42] +</text>
+              <text x="557" y="82" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">[User Question]</text>
+              <rect x="472" y="94" width="171" height="36" rx="4" fill="rgba(52,211,153,0.12)" stroke="#34d399" />
+              <text x="557" y="108" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">LLM Generates Answer</text>
+              <text x="557" y="122" fill="#f8fafc" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" text-anchor="middle">Zero Hallucination &middot; Verified Source</text>
+              <text x="557" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Factual, Grounded Response</text>
+            </svg>
+          </div>
+
+          <h3>2. The RAG Pipeline: Ingestion, HNSW Indexing, and Generation</h3>
+          <p>
+            Retrieval-Augmented Generation bridges the gap between static model weights and dynamic private knowledge through a four-stage loop:<br><br>
+            • <strong>1. Chunking &amp; Windowing</strong>: You cannot embed an entire 500-page PDF into one vector without losing fine-grained details (embedding dilution). Instead, documents are split into manageable chunks (typically 256–512 tokens) with a 10–20% sliding overlap so sentences are not clipped abruptly mid-thought.<br>
+            • <strong>2. Approximate Nearest Neighbor (ANN) with HNSW</strong>: In a database with 10 million chunks, comparing a query against every single vector (brute-force k-NN) takes hundreds of milliseconds. Vector databases (like Qdrant, Pinecone, Milvus, and pgvector) use <strong>Hierarchical Navigable Small World (HNSW)</strong> graphs. HNSW builds multi-layered skip-list networks, allowing logarithmic $O(\log N)$ search traversal that pinpoints the closest semantic matches in under 15 milliseconds.<br>
+            • <strong>3. Prompt Augmentation</strong>: The top $K$ retrieved chunks (e.g., top 4 chunks) are formatted directly into the LLM system prompt: <code>Context: [Retrieved Documents] ... Question: [User Query]</code>.<br>
+            • <strong>4. Grounded Synthesis</strong>: The generative model reads the retrieved context and answers strictly based on verified facts, citing sources and eliminating model hallucinations.
+          </p>
+
+          <h3>3. Production Reality: Why Naive Vector Search Fails and How to Fix It</h3>
+          <p>
+            Many teams ship naive RAG prototypes only to watch them fail in production. Here are the three battle-tested architectural patterns required for high-accuracy RAG:<br><br>
+            • <strong>Hybrid Search (Dense + Sparse BM25)</strong>: Vector embeddings are great at conceptual similarity, but they struggle with exact part numbers, product SKUs, and unique employee IDs (e.g., <code>ERR_504_TIMEOUT</code> or <code>SKU-8921B</code>). Production architectures combine dense semantic embeddings with classic sparse keyword search (BM25) using Reciprocal Rank Fusion (RRF).<br>
+            • <strong>Cross-Encoder Reranking</strong>: Bi-encoders (embedding models) process queries and documents independently. Once the vector index returns the top 25 candidates, a secondary Cross-Encoder model (such as Cohere Rerank or BGE-Reranker) evaluates the query and document together, re-ordering them to ensure the single most relevant paragraph is at the very top.<br>
+            • <strong>Context Window Hygiene</strong>: Stuffing 20 chunks into an LLM prompt triggers the 'Lost in the Middle' phenomenon, where models ignore tokens placed in the middle of long contexts. Limiting to 3–5 precision-reranked chunks consistently yields superior answers at a fraction of the token cost.
+          </p>
+
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            Vector embeddings do not match keywords—they match conceptual direction in high-dimensional space. By converting text chunks into dense floating-point vectors and querying them via fast HNSW graphs, RAG gives LLMs an instant, private memory bank. To achieve production-grade reliability, always combine dense vector search with sparse BM25 keyword matching and a Cross-Encoder reranking step.
+          </div>
+        </div>
+
+        <div class="ai-explainer-box">
+          <div class="ai-explainer-info">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
+          </div>
+          <div class="ai-btn-group">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'vector-embeddings-rag')">
+              <i class="fa-solid fa-robot"></i> ChatGPT
+            </button>
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'vector-embeddings-rag')">
+              <i class="fa-solid fa-brain"></i> Claude
+            </button>
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'vector-embeddings-rag')">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
+            </button>
+          </div>
+        </div>
+
+        <div class="article-footer">
+          <span>Curated Tech Notes</span>
+          <span>Category: AI Infrastructure &amp; Vector Search</span>
+        </div>
+      </article>
+
+      <!-- Article 2: September 5, 2026 -->
+      <article class="article-card" id="rabbitmq-vs-kafka" data-category="system-design" data-keywords="rabbitmq vs kafka message queues event streams amqp append only log zero copy consumer groups distributed systems backend architecture sendfile page cache">
         <div class="article-header-top">
           <div class="article-meta">
             <span class="article-tag">System Design</span>
