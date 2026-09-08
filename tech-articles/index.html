@@ -641,7 +641,7 @@ a {
           <input type="text" id="article-search" class="search-input" placeholder="Search tech articles, AI topics, keywords..." autocomplete="off">
         </div>
         <div class="filter-chips">
-          <button class="filter-chip active" data-category="all">All Articles (10)</button>
+          <button class="filter-chip active" data-category="all">All Articles (11)</button>
           <button class="filter-chip" data-category="ai">AI & LLM Infra</button>
           <button class="filter-chip" data-category="system-design">System Design</button>
           <button class="filter-chip" data-category="databases">Databases & Data Eng</button>
@@ -654,8 +654,132 @@ a {
   <main class="container">
     <div class="article-list" id="article-container">
 
-      <!-- Article 1: September 7, 2026 -->
-      <article class="article-card featured" id="consistent-hashing" data-category="system-design" data-keywords="consistent hashing hash ring virtual nodes vnodes distributed caching dynamo cassandra ketama load balancing data redistribution fault tolerance">
+      <!-- Article 1: September 8, 2026 -->
+      <article class="article-card featured" id="memory-bound-llm-inference" data-category="ai" data-keywords="memory bound llm inference arithmetic intensity roofline model memory bandwidth hbm sram tensor cores prefill vs decode continuous batching quantization kv cache">
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">AI Engineering</span>
+            <span class="article-tag">LLM Serving</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> September 8, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 5 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('memory-bound-llm-inference', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
+        </div>
+
+        <h2 class="article-title">
+          Why LLM Inference is Memory-Bound: The GPU Memory Wall and Arithmetic Intensity
+        </h2>
+
+        <p class="article-summary">
+          Modern GPUs can crunch trillions of floating-point operations every second, yet generating text from an LLM leaves their tensor cores idle over 90% of the time. Here is why autoregressive token generation is choked by memory bandwidth, how arithmetic intensity dictates the bottleneck, and how production engines optimize around the hardware memory wall.
+        </p>
+
+        <div class="article-body">
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: The 1,000-Dishes-Per-Minute Chef and the Single-Item Pantry Runner
+            </div>
+            Imagine hiring a world-renowned chef who can chop, sauté, and plate an entire banquet dish in exactly three seconds flat. You place him in a high-tech kitchen station with razor-sharp knives and searing woks. But there is a catch: the ingredient pantry is located down a long hallway, and your single kitchen assistant is only allowed to carry one small spice jar per trip.<br><br>
+            Every time the chef wants to cook a single bite, he has to sit on his hands for two minutes while the assistant sprints back and forth from the pantry. The chef's hands aren't tired—in fact, he is 98% idle! His cooking speed doesn't matter anymore; the only thing determining dinner service speed is how fast the assistant's sneakers can run across that hallway.<br><br>
+            In GPU architecture, the chef represents the raw compute horsepower (the Tensor Cores capable of hundreds of teraFLOPS), while the pantry runner is the memory bus shuttling model weights from High-Bandwidth Memory (HBM) into on-chip cache (SRAM). During autoregressive token generation, we read gigabytes of weights just to calculate math for one token at a time—turning our multi-thousand-dollar GPU into an expensive memory-waiting room.
+          </div>
+
+          <h3>1. The Roofline Model: Arithmetic Intensity and Prefill vs. Decode</h3>
+          <p>
+            To understand why LLMs run slowly, computer architects use the <strong>Roofline Model</strong>. This model compares a processor's theoretical peak compute (FLOPs per second) against its memory bandwidth (Bytes per second). The critical metric is <strong>Arithmetic Intensity</strong>—the ratio of floating-point operations executed per byte of data transferred from memory:<br><br>
+            $$\text{Arithmetic Intensity} = \frac{\text{FLOPs}}{\text{Bytes transferred from HBM}}$$<br><br>
+            Every LLM inference request runs in two dramatically different operational regimes:<br>
+            • <strong>The Prefill Phase (Prompt Ingestion)</strong>: When you submit a prompt with 1,000 tokens, the GPU processes all 1,000 tokens simultaneously using Matrix-Matrix multiplication (GEMM). Because the loaded weights are reused across all 1,000 tokens in the prompt matrix, arithmetic intensity is high (roughly 50–100+ FLOPs/byte). The GPU easily reaches the horizontal roofline: it is <strong>compute-bound</strong> and runs near 100% Tensor Core saturation.<br>
+            • <strong>The Decode Phase (Token-by-Token Generation)</strong>: Generating the reply happens one token at a time. For each new token, the GPU performs Matrix-Vector multiplication (GEMV). Every single weight in the model must be streamed from memory into the registers, used exactly once for that single token's vector, and then discarded. Arithmetic intensity collapses to roughly 1 to 2 FLOPs/byte. The GPU sits in the sloped memory-bound region of the roofline: the tensor cores finish their math in microseconds and spend the rest of the clock cycles waiting for memory lines to arrive.
+          </p>
+
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 680 185" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="10" width="660" height="165" rx="10" fill="#0f1118" stroke="rgba(255,255,255,0.1)" stroke-dasharray="3,3" />
+              <rect x="25" y="22" width="190" height="140" rx="8" fill="#151822" stroke="#38bdf8" stroke-width="1.2" />
+              <text x="120" y="42" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">1. OFF-CHIP HBM3 MEMORY</text>
+              <rect x="37" y="54" width="166" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" />
+              <text x="120" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">70B Model FP16: 140 GB</text>
+              <text x="120" y="81" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">HBM Bandwidth: ~3.35 TB/s</text>
+              <rect x="37" y="94" width="166" height="36" rx="4" fill="rgba(56,189,248,0.12)" stroke="#38bdf8" />
+              <text x="120" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Decode: Stream 140 GB / Tok</text>
+              <text x="120" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Max Throughput: ~24 tok/s</text>
+              <text x="120" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Weights Reside in DRAM</text>
+              <line x1="215" y1="92" x2="235" y2="92" stroke="#f59e0b" stroke-width="2" />
+              <polygon points="235,92 228,88 228,96" fill="#f59e0b" />
+              <rect x="235" y="22" width="210" height="140" rx="8" fill="#151822" stroke="#f59e0b" stroke-width="1.2" />
+              <text x="340" y="42" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">2. THE MEMORY WALL GAP</text>
+              <rect x="247" y="54" width="186" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" />
+              <text x="340" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Prefill Phase (GEMM Prompt)</text>
+              <text x="340" y="81" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">Intensity &gt; 100 FLOP/Byte (Compute)</text>
+              <rect x="247" y="94" width="186" height="36" rx="4" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" />
+              <text x="340" y="108" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Decode Phase (GEMV Token)</text>
+              <text x="340" y="122" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">Intensity ~ 1 FLOP/Byte (Memory)</text>
+              <text x="340" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Roofline Bottleneck Zone</text>
+              <line x1="445" y1="92" x2="465" y2="92" stroke="#34d399" stroke-width="2" />
+              <polygon points="465,92 458,88 458,96" fill="#34d399" />
+              <rect x="465" y="22" width="190" height="140" rx="8" fill="#151822" stroke="#34d399" stroke-width="1.2" />
+              <text x="560" y="42" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">3. ON-CHIP COMPUTE &amp; FIXES</text>
+              <rect x="477" y="54" width="166" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" />
+              <text x="560" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Tensor Cores: 989 TFLOPS</text>
+              <text x="560" y="81" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">&gt; 95% Idle in Single Decode</text>
+              <rect x="477" y="94" width="166" height="36" rx="4" fill="rgba(52,211,153,0.12)" stroke="#34d399" />
+              <text x="560" y="108" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Continuous Batching &amp; INT4</text>
+              <text x="560" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Shares Weights &amp; Cuts Payload</text>
+              <text x="560" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Saturates GPU Hardware &#x2714;</text>
+            </svg>
+          </div>
+
+          <h3>2. Crunching the Numbers: Why a 70B Model Maxes Out at ~14 Tokens/Second</h3>
+          <p>
+            Let's run the real hardware math on an industry-standard setup: a 70-billion parameter model running in 16-bit precision (FP16/BF16) on an NVIDIA H100 SXM GPU.<br><br>
+            • <strong>The Weight Payload</strong>: In 16-bit floating point, each parameter takes 2 bytes. A 70B model requires $70 \times 10^9 \times 2 = 140 \text{ GB}$ of static memory just to hold the weights.<br>
+            • <strong>The Hardware Limits</strong>: An NVIDIA H100 SXM features a monster compute ceiling of <strong>989 TFLOPS</strong> of FP16 tensor core compute, but its HBM3 memory bandwidth is <strong>3,350 GB/s (3.35 TB/s)</strong>.<br>
+            • <strong>The Single-User Bottleneck</strong>: To generate one output token for a single user, you must stream the entire 140 GB weight tensor from off-chip HBM into the streaming multiprocessors. At 3,350 GB/s, transferring 140 GB takes $\frac{140}{3,350} \approx 0.0418 \text{ seconds}$.<br>
+            • <strong>The Resulting Throughput</strong>: $\frac{1}{0.0418} \approx 24 \text{ tokens/sec}$ is the hard theoretical speed limit for single-stream generation—even if you had infinite compute power! If you run this across dual 80GB GPUs with 2,000 GB/s aggregate bandwidth, that cap drops to ~14 tokens/sec. Meanwhile, the Tensor Cores only perform $2 \times 70 \times 10^9 = 140 \text{ GFLOPs}$ per token. At 989 TFLOPS peak, the compute hardware is active for less than 0.2 milliseconds out of that 42 millisecond interval! Over <strong>99% of the GPU's compute capability is completely wasted</strong> waiting for memory bandwidth.
+          </p>
+
+          <h3>3. Production Fixes: How Modern Serving Engines Beat the Memory Wall</h3>
+          <p>
+            Because we cannot magically triple the physical pin count or bus width of silicon memory, serving frameworks like vLLM, TensorRT-LLM, and TGI use three software techniques to shift decode workloads back toward compute efficiency:<br><br>
+            • <strong>1. Continuous Batching (Iteration-Level Scheduling)</strong>: Instead of running 1 user at a time, we batch 32 or 64 concurrent requests into each decode step. The engine streams the 140 GB of model weights across the bus once, but multiplies them against 64 user token vectors simultaneously. This boosts arithmetic intensity by 64x without transferring a single extra byte of weight data, driving Tensor Core utilization up from 2% to 60%+.<br>
+            • <strong>2. Weight Quantization (FP16 to INT8, INT4, FP4)</strong>: By quantizing static weights from 16-bit to 4-bit (using AWQ or GPTQ), the 70B model shrinks from 140 GB to 35 GB. Every forward pass transfers 75% fewer bytes over the memory bus, directly quadrupling the single-stream token generation ceiling on memory-bound hardware.<br>
+            • <strong>3. IO-Aware Kernel Fusion &amp; FlashAttention</strong>: In standard multi-head attention, intermediate attention matrices are repeatedly written back and read from slow HBM. FlashAttention tiles the computation, keeping queries, keys, and values inside fast on-chip SRAM (which boasts over 19 TB/s of internal bandwidth) until the final output is computed, cutting memory bus round-trips by up to 80%.
+          </p>
+
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            Autoregressive LLM generation is fundamentally memory-bound, not compute-bound. Because every single weight in a model must be streamed from HBM into on-chip registers for each new token generated, single-stream decode leaves over 95% of GPU tensor core horsepower idle. To achieve cost-effective throughput in production, systems engineers increase arithmetic intensity using continuous batching to share weight transfers across many users, aggressive 4-bit quantization to shrink byte payloads, and SRAM kernel fusions like FlashAttention to avoid memory round-trips.
+          </div>
+        </div>
+
+        <div class="ai-explainer-box">
+          <div class="ai-explainer-info">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
+          </div>
+          <div class="ai-btn-group">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'memory-bound-llm-inference')">
+              <i class="fa-solid fa-robot"></i> ChatGPT
+            </button>
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'memory-bound-llm-inference')">
+              <i class="fa-solid fa-brain"></i> Claude
+            </button>
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'memory-bound-llm-inference')">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
+            </button>
+          </div>
+        </div>
+
+        <div class="article-footer">
+          <span>Curated Tech Notes</span>
+          <span>Category: AI Infrastructure &amp; LLM Serving</span>
+        </div>
+      </article>
+
+      <!-- Article 2: September 7, 2026 -->
+      <article class="article-card" id="consistent-hashing" data-category="system-design" data-keywords="consistent hashing hash ring virtual nodes vnodes distributed caching dynamo cassandra ketama load balancing data redistribution fault tolerance">
         <div class="article-header-top">
           <div class="article-meta">
             <span class="article-tag">System Design</span>
