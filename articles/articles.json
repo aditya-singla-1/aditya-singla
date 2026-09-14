@@ -1,4 +1,7 @@
 [
+  "2026-09-14-lora-qlora-fine-tuning.json",
+  "2026-09-12-mixture-of-experts-sparse-routing.json",
+  "2026-09-10-flash-attention-io-aware.json",
   "2026-09-08-memory-bound-llm-inference.json",
   "2026-09-07-consistent-hashing-system-design.json",
   "2026-09-06-vector-embeddings-rag.json",

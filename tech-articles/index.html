@@ -641,7 +641,7 @@ a {
           <input type="text" id="article-search" class="search-input" placeholder="Search tech articles, AI topics, keywords..." autocomplete="off">
         </div>
         <div class="filter-chips">
-          <button class="filter-chip active" data-category="all">All Articles (11)</button>
+          <button class="filter-chip active" data-category="all">All Articles (14)</button>
           <button class="filter-chip" data-category="ai">AI & LLM Infra</button>
           <button class="filter-chip" data-category="system-design">System Design</button>
           <button class="filter-chip" data-category="databases">Databases & Data Eng</button>
@@ -654,8 +654,399 @@ a {
   <main class="container">
     <div class="article-list" id="article-container">
 
-      <!-- Article 1: September 8, 2026 -->
-      <article class="article-card featured" id="memory-bound-llm-inference" data-category="ai" data-keywords="memory bound llm inference arithmetic intensity roofline model memory bandwidth hbm sram tensor cores prefill vs decode continuous batching quantization kv cache">
+      <!-- Article 1: September 14, 2026 -->
+      <article class="article-card featured" id="lora-qlora-fine-tuning" data-category="ai" data-keywords="lora qlora peft low rank adaptation low rank matrix factorization rank r alpha scaling 4-bit normalfloat nf4 double quantization paged optimizers bitsandbytes triton frozen base weights">
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">AI Engineering</span>
+            <span class="article-tag">PEFT &amp; Fine-Tuning</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> September 14, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 6 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('lora-qlora-fine-tuning', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
+        </div>
+
+        <h2 class="article-title">
+          LoRA and QLoRA: How Low-Rank Adapters Fine-Tune Billion-Parameter Models on Single GPUs
+        </h2>
+
+        <p class="article-summary">
+          Full fine-tuning of a 70B parameter model demands over 800 GB of high-end VRAM because optimizer states and gradient tensors dwarf the model weights themselves. Low-Rank Adaptation (LoRA) freezes the original base weights and injects tiny trainable rank-decomposition matrices, cutting trainable parameters by 99.9%. QLoRA pushes this further with 4-bit NormalFloat (NF4) quantization, Double Quantization, and Paged Optimizers. Here is the exact matrix factorization math, the zero-latency inference trick, and how to fine-tune massive models on commodity hardware.
+        </p>
+
+        <div class="article-body">
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: The Transparent Drafting Acetate vs. Re-architecting the Skyscraper
+            </div>
+            Imagine you are an architect hired to customize an iconic 100-story skyscraper for a new medical tenant. The original master blueprints fill an entire room with 70,000 dense structural sheets. In full fine-tuning, you would hire a fleet of 50 draftsmen to re-draw all 70,000 pages from scratch, calculating new foundation load equations for every beam even if you only need to relocate a few examination room partitions. You would burn hundreds of thousands of dollars in paper and months of labor.<br><br>
+            LoRA approaches this like a seasoned civil engineer: you lock the original master blueprint vault and declare it completely read-only. Instead of modifying the blueprints, you lay a clear, transparent sheet of drafting film over just the floor plans you care about. On that thin plastic overlay, you sketch only the delta changes—the new partition walls and plumbing lines. When the construction crew looks down, they see the base building through the transparent film plus your overlay adjustments.<br><br>
+            QLoRA takes this efficiency a step further: it compresses the massive 70,000-page master blueprint into microfiche (4-bit quantization) so it fits into a single file drawer, while keeping your thin transparent drafting sheets right on top. You get the exact same finished building layout, but your blueprint desk only needs to hold a couple of sheets instead of an entire warehouse.
+          </div>
+
+          <h3>1. The Full Fine-Tuning Trap: Why VRAM Explodes During Training</h3>
+          <p>
+            A common misconception among developers is that if a 70-billion parameter model fits into 140 GB of VRAM for inference (at FP16), fine-tuning it should require roughly the same memory. In practice, full fine-tuning a 70B model requires <strong>over 800 GB to 1.2 TB of VRAM</strong>—demanding an entire 8-GPU cluster of NVIDIA H100s.<br><br>
+            Why does fine-tuning explode memory usage so drastically? Because static model weights are only a fraction of the training memory footprint:<br>
+            • <strong>Model Weights</strong>: In FP16 / BF16, 70B parameters take $70 \times 2 = 140 \text{ GB}$.<br>
+            • <strong>Gradients</strong>: Backpropagation calculates a gradient for every single weight parameter, taking another $140 \text{ GB}$.<br>
+            • <strong>Optimizer States (AdamW)</strong>: The standard AdamW optimizer maintains two rolling momentum states for every parameter—the first moment (mean $m_t$) and the second moment (uncentered variance $v_t$). For numerical stability, Adam stores these in 32-bit float (FP32). That requires 8 bytes per parameter: $70 \times 8 = 560 \text{ GB}$!<br>
+            • <strong>Activation Memory</strong>: Storing intermediate forward activations across 80 layers for gradient computation adds another 50 to 100+ GB depending on context window and batch size.<br><br>
+            Total bill: $140 + 140 + 560 + 80 = 920 \text{ GB}$. Full fine-tuning is economically unviable for 99% of engineering teams. We need a way to adapt model behavior without updating all 70 billion parameters.
+          </p>
+
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 680 185" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="10" width="660" height="165" rx="10" fill="#0f1118" stroke="rgba(255,255,255,0.1)" stroke-dasharray="3,3" />
+              <rect x="25" y="22" width="190" height="140" rx="8" fill="#151822" stroke="#38bdf8" stroke-width="1.2" />
+              <text x="120" y="42" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">1. FROZEN BASE WEIGHTS</text>
+              <rect x="37" y="54" width="166" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" />
+              <text x="120" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Original Matrix W_0 &isin; &reals;^{d &times; k}</text>
+              <text x="120" y="81" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">Weights Frozen (Zero Gradients)</text>
+              <rect x="37" y="94" width="166" height="36" rx="4" fill="rgba(56,189,248,0.12)" stroke="#38bdf8" />
+              <text x="120" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">QLoRA: 4-bit NF4 Quant</text>
+              <text x="120" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">70B Model: 140GB &rarr; 36GB VRAM</text>
+              <text x="120" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Base Knowledge Intact</text>
+              <line x1="215" y1="92" x2="235" y2="92" stroke="#f59e0b" stroke-width="2" />
+              <polygon points="235,92 228,88 228,96" fill="#f59e0b" />
+              <rect x="235" y="22" width="210" height="140" rx="8" fill="#151822" stroke="#f59e0b" stroke-width="1.2" />
+              <text x="340" y="42" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">2. TRAINABLE LOW-RANK ADAPTER</text>
+              <rect x="247" y="54" width="186" height="34" rx="4" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" />
+              <text x="340" y="68" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Matrix A (r &times; k) &amp; B (d &times; r)</text>
+              <text x="340" y="81" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">Rank r=8 &laquo; d (99.9% Less Params)</text>
+              <rect x="247" y="94" width="186" height="36" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" />
+              <text x="340" y="108" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">&Delta;W = (&alpha;/r) &middot; (B &times; A)</text>
+              <text x="340" y="122" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Init: B=0, A~N(0,&sigma;^2) &rarr; &Delta;W_0=0</text>
+              <text x="340" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Only A &amp; B Compute Gradients</text>
+              <line x1="445" y1="92" x2="465" y2="92" stroke="#34d399" stroke-width="2" />
+              <polygon points="465,92 458,88 458,96" fill="#34d399" />
+              <rect x="465" y="22" width="190" height="140" rx="8" fill="#151822" stroke="#34d399" stroke-width="1.2" />
+              <text x="560" y="42" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">3. OUTPUT &amp; INFERENCE FUSION</text>
+              <rect x="477" y="54" width="166" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" />
+              <text x="560" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">h = W_0 x + &Delta;W x</text>
+              <text x="560" y="81" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">Zero-Latency Weight Fusion</text>
+              <rect x="477" y="94" width="166" height="36" rx="4" fill="rgba(52,211,153,0.12)" stroke="#34d399" />
+              <text x="560" y="108" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">W_merged = W_0 + (&alpha;/r)BA</text>
+              <text x="560" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Tune 70B on 1x 48GB GPU</text>
+              <text x="560" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">PEFT Production Standard &#x2714;</text>
+            </svg>
+          </div>
+
+          <h3>2. Low-Rank Decomposition: The Mathematics of LoRA</h3>
+          <p>
+            Published by Edward Hu et al. at Microsoft, <strong>Low-Rank Adaptation (LoRA)</strong> is rooted in the <em>intrinsic rank hypothesis</em>: while weight matrices in deep neural networks are nominally high-dimensional, the weight updates $\Delta W$ needed to adapt a model to a specific task live on a subspace of much lower intrinsic dimension.<br><br>
+            In a standard transformer layer, an input vector $x \in \mathbb{R}^{d}$ is multiplied by a dense weight matrix $W_0 \in \mathbb{R}^{d \times k}$ to yield $h = W_0 x$. Instead of updating $W_0$ directly, LoRA freezes $W_0$ completely and decomposes the update matrix $\Delta W$ into the product of two low-rank matrices, $B$ and $A$:<br><br>
+            $$h = W_0 x + \Delta W x = W_0 x + \frac{\alpha}{r} (B \times A) x$$<br><br>
+            Here, $A \in \mathbb{R}^{r \times k}$ and $B \in \mathbb{R}^{d \times r}$, where the rank $r \ll \min(d, k)$. Typically, rank $r$ is chosen as 8, 16, or 32, while hidden dimensions $d$ and $k$ are 4,096 or 8,192.<br><br>
+            • <strong>Initialization Safety</strong>: Matrix $A$ is initialized from a random Gaussian distribution, while matrix $B$ is initialized to exact zeros. Therefore, at step 0 of training, $\Delta W = B \times A = 0$. The model starts training with the exact output of the original base model without any initial perturbation.<br>
+            • <strong>The Scaling Factor ($\alpha / r$)</strong>: The hyperparameter $\alpha$ (typically set to $2r$) scales the adapter updates. Keeping $\alpha$ constant when tuning rank $r$ stabilizes the gradient step sizes so you do not need to re-tune learning rates when experimenting with different adapter capacities.<br>
+            • <strong>Parameter Reduction</strong>: If $d = 4,096$ and $k = 4,096$, the base weight has $16,777,216$ parameters. With $r = 8$, matrices $A$ and $B$ together have only $(4,096 \times 8) + (8 \times 4,096) = 65,536$ parameters—a <strong>99.6% reduction in trainable parameters</strong> for that projection layer.<br>
+            • <strong>Zero Inference Latency Overhead</strong>: During deployment, you don't need to compute two separate matrix multiplications. Because matrix addition is linear, you can mathematically merge the adapter weights directly into the base weights before serving: $W_{\text{deployed}} = W_0 + \frac{\alpha}{r} (B \times A)$. The serving engine runs the exact same standard matrix multiplication with zero extra latency.
+          </p>
+
+          <h3>3. The QLoRA Revolution: Fine-Tuning 70B on a Single GPU</h3>
+          <p>
+            While LoRA drastically cut trainable parameters and optimizer states, you still had to hold the frozen 140 GB base weights in memory. In 2023, Tim Dettmers et al. introduced <strong>QLoRA (Quantized Low-Rank Adaptation)</strong>, which shattered the memory barrier by introducing three key systems engineering innovations:<br><br>
+            • <strong>1. 4-bit NormalFloat (NF4) Quantization</strong>: Standard INT4 quantization assumes a uniform distribution of values. But pretrained neural network weights follow a bell-shaped normal (Gaussian) distribution centered around zero. NF4 creates an information-theoretically optimal quantile codebook that allocates equal numbers of weights to each 4-bit bin. This preserves high precision where 90% of the weights actually live, preventing the severe perplexity degradation typical of standard 4-bit rounding.<br>
+            • <strong>2. Double Quantization (DQ)</strong>: Quantizing weights into blocks requires storing a 32-bit floating point scaling factor (constant) for every 64-element block. Double Quantization treats those FP32 quantization constants as another dataset and quantizes them into 8-bit integers with a second-stage block size of 256. This shaves memory overhead from 0.5 bits per parameter down to 0.127 bits per parameter—saving roughly 3 GB on a 70B model.<br>
+            • <strong>3. Paged Optimizers with Triton / bitsandbytes</strong>: During training, activation spikes or variable sequence lengths can cause temporary memory peaks that trigger Out-of-Memory (OOM) crashes. QLoRA leverages NVIDIA CUDA unified memory to automatically page optimizer states from GPU VRAM out to standard CPU system RAM when memory pressure hits 95%, pulling them back when needed.<br><br>
+            The result: the frozen base weights of a 70B model drop from 140 GB down to just ~36 GB in NF4. During backpropagation, only the lightweight FP16 LoRA adapter gradients and FP32 Adam states are updated in memory. A 70-billion parameter model can now be fine-tuned on a <strong>single 48 GB NVIDIA A6000 or RTX 6000 Ada GPU</strong>, transforming enterprise model customization from a six-figure cluster expense into a routine single-workstation job.
+          </p>
+
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            Full fine-tuning of large language models fails on standard infrastructure because AdamW optimizer states and backpropagation gradients require 4× to 6× the memory of the weights themselves. LoRA sidesteps this barrier by freezing the base model and training compact low-rank decomposition matrices (B × A) that slash trainable parameters by over 99%. QLoRA pushes efficiency to the limit by compressing frozen base weights into 4-bit NormalFloat (NF4), using Double Quantization to minimize scaling metadata, and paging memory spikes to CPU RAM. For production serving, adapter weights can be statically folded back into the base matrix, delivering domain-adapted accuracy with zero added inference latency.
+          </div>
+        </div>
+
+        <div class="ai-explainer-box">
+          <div class="ai-explainer-info">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
+          </div>
+          <div class="ai-btn-group">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'lora-qlora-fine-tuning')">
+              <i class="fa-solid fa-robot"></i> ChatGPT
+            </button>
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'lora-qlora-fine-tuning')">
+              <i class="fa-solid fa-brain"></i> Claude
+            </button>
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'lora-qlora-fine-tuning')">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
+            </button>
+          </div>
+        </div>
+
+        <div class="article-footer">
+          <span>Curated Tech Notes</span>
+          <span>Category: AI Architecture &amp; LLM Infra</span>
+        </div>
+      </article>
+
+      <!-- Article 2: September 12, 2026 -->
+      <article class="article-card" id="mixture-of-experts-sparse-routing" data-category="ai" data-keywords="mixture of experts moe sparse routing top-k gating switch transformer mixtral deepseek expert parallelism load balancing loss token dropping capacity factor feed forward network ffn all-to-all nvlink">
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">AI Engineering</span>
+            <span class="article-tag">MoE Architecture</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> September 12, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 6 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('mixture-of-experts-sparse-routing', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
+        </div>
+
+        <h2 class="article-title">
+          Mixture of Experts (MoE): How Sparse Gating Delivers Frontier Scale at a Fraction of Compute
+        </h2>
+
+        <p class="article-summary">
+          Scaling dense neural networks to hundreds of billions of parameters hits a hard economic wall: every token must pass through every parameter in the model. Mixture of Experts (MoE) decouples total capacity from compute cost by replacing monolithic feed-forward layers with dozens of specialized sub-networks and dynamically routing tokens to just two of them. Here is how sparse Top-K gating works, why auxiliary load-balancing loss prevents expert starvation, and how distributed expert parallelism coordinates tokens across GPU clusters.
+        </p>
+
+        <div class="article-body">
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: The Specialty Hospital and the Triage Nurse
+            </div>
+            Imagine walking into a massive regional medical center with 64 specialized surgical clinics—cardiology, neurology, orthopedics, dermatology, oncology, and dozens more. In a standard dense model setup, every patient who walks in the front door is forced to visit every single doctor in all 64 departments. Even if you only have a sprained wrist, you would sit through an MRI, an endoscopy, an echocardiogram, and a psychiatric evaluation before leaving. The entire hospital would grind to a halt within an hour, and your medical bill would be astronomical.<br><br>
+            Mixture of Experts introduces a smart triage nurse stationed at the admissions desk. When you arrive with your symptoms, the triage nurse looks at you for three seconds (the gating network) and routes you to exactly the two departments you need—orthopedics and radiology. You receive focused, high-end care, and you are out the door in twenty minutes. The hospital can maintain 64 world-class departments (massive total model capacity), but each individual patient only uses the resources of two rooms (small active compute cost).<br><br>
+            There is just one catch: if the triage nurse starts sending every single incoming patient to the famous cardiologist because of a slight initial bias, cardiology gets backed up with a 12-hour waiting room while the other 63 doctors play solitaire in empty clinics. To prevent this, the hospital administrator enforces a strict load-balancing rule (auxiliary loss) that penalizes the triage desk if patients are not routed fairly across all capable specialists.
+          </div>
+
+          <h3>1. The Dense Scaling Wall: Why Activating Every Parameter is Flawed</h3>
+          <p>
+            In a conventional dense transformer (such as GPT-3 or Llama 3), every token in the prompt must pass through every weight in every layer. If a dense model has 400 billion parameters, generating a single token requires roughly 800 billion floating-point operations. Serving a model of that size requires sprawling clusters of high-end GPUs, burning massive amounts of power and choking on memory bandwidth.<br><br>
+            Yet if you inspect where parameters actually live in a transformer, roughly two-thirds of all weights reside in the <strong>Feed-Forward Network (FFN) blocks</strong>—the two linear projection layers that follow self-attention. Self-attention determines how tokens relate to one another in context, but the FFN layers act like an associative memory bank, storing factual knowledge and domain-specific patterns.<br><br>
+            When an incoming token represents a line of Python code, it has no need to activate parameters specialized in 18th-century French poetry, organic chemistry, or tax law. MoE exploits this insight by replacing the single monolithic FFN block in each layer with an array of $E$ independent FFN blocks called <strong>experts</strong> (typically 8, 16, or 64 per layer). A lightweight gating network routes each token to only a tiny subset—usually the top-2 experts ($k=2$). As a result, a model can possess 670 billion total parameters across all its experts, but generating each token only executes the math for 39 billion active parameters. You gain the encyclopedic capacity of a frontier-scale model with the per-token inference cost of a mid-sized network.
+          </p>
+
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 680 185" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="10" width="660" height="165" rx="10" fill="#0f1118" stroke="rgba(255,255,255,0.1)" stroke-dasharray="3,3" />
+              <rect x="25" y="22" width="190" height="140" rx="8" fill="#151822" stroke="#38bdf8" stroke-width="1.2" />
+              <text x="120" y="42" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">1. INPUT &amp; GATING ROUTER</text>
+              <rect x="37" y="54" width="166" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" />
+              <text x="120" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Token Vector x &isin; &reals;^d</text>
+              <text x="120" y="81" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Router Logits: H = x &middot; W_g</text>
+              <rect x="37" y="94" width="166" height="36" rx="4" fill="rgba(56,189,248,0.12)" stroke="#38bdf8" />
+              <text x="120" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Top-2 Selection (k=2)</text>
+              <text x="120" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">E2: 68% | E7: 32% (Others: 0)</text>
+              <text x="120" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Sparse Softmax Triage Desk</text>
+              <line x1="215" y1="92" x2="235" y2="92" stroke="#f59e0b" stroke-width="2" />
+              <polygon points="235,92 228,88 228,96" fill="#f59e0b" />
+              <rect x="235" y="22" width="210" height="140" rx="8" fill="#151822" stroke="#f59e0b" stroke-width="1.2" />
+              <text x="340" y="42" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">2. SPARSE EXPERT FFNs</text>
+              <rect x="247" y="54" width="186" height="34" rx="4" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" />
+              <text x="340" y="68" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Active: Expert #2 &amp; Expert #7</text>
+              <text x="340" y="81" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">Runs Math on 2 FFNs Only</text>
+              <rect x="247" y="94" width="186" height="36" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" />
+              <text x="340" y="108" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Idle: E1, E3, E4, E5, E6, E8...</text>
+              <text x="340" y="122" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">Bypassed: 0 Compute Paid</text>
+              <text x="340" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Aux Loss Prevents Collapse</text>
+              <line x1="445" y1="92" x2="465" y2="92" stroke="#34d399" stroke-width="2" />
+              <polygon points="465,92 458,88 458,96" fill="#34d399" />
+              <rect x="465" y="22" width="190" height="140" rx="8" fill="#151822" stroke="#34d399" stroke-width="1.2" />
+              <text x="560" y="42" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">3. OUTPUT ACCUMULATION</text>
+              <rect x="477" y="54" width="166" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" />
+              <text x="560" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">y = 0.68&middot;E2(x) + 0.32&middot;E7(x)</text>
+              <text x="560" y="81" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">NVLink All-to-All Dispatch</text>
+              <rect x="477" y="94" width="166" height="36" rx="4" fill="rgba(52,211,153,0.12)" stroke="#34d399" />
+              <text x="560" y="108" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">1/8th Active FLOPs per Token</text>
+              <text x="560" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Frontier Scale at 14B Cost</text>
+              <text x="560" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Sparse Activation Complete &#x2714;</text>
+            </svg>
+          </div>
+
+          <h3>2. Inside the Router: Top-K Gating, Softmax, and the Danger of Expert Collapse</h3>
+          <p>
+            The routing mechanism sits directly between the attention layer and the expert pool. It is surprisingly lightweight: a single learnable linear matrix $W_g \in \mathbb{R}^{d \times E}$, where $d$ is the hidden vector dimension and $E$ is the number of available experts.<br><br>
+            For an incoming token vector $x$, the router calculates raw affinity scores across all experts:<br><br>
+            $$H(x) = x \cdot W_g$$<br><br>
+            It then applies a softmax function to obtain normalized routing probabilities and picks the top $k$ highest-scoring experts:<br><br>
+            $$G(x) = \text{TopK}\left(\text{Softmax}(H(x)), k\right)$$<br><br>
+            If $k=2$, the router sets all other expert weights to zero and re-normalizes the top two scores so they sum to 1. The token vector $x$ is dispatched only to those two expert FFNs, and their outputs are combined using a weighted sum:<br><br>
+            $$y = \sum_{i \in \text{TopK}} G(x)_i \cdot E_i(x)$$<br><br>
+            Now comes the most dangerous failure mode in MoE systems: <strong>Expert Collapse</strong>. During early training, gradient descent is inherently greedy. If Expert 2 happens to have slightly better random weight initialization, it yields slightly lower loss. The router responds by sending more tokens to Expert 2. Because Expert 2 receives more tokens, it receives more gradient updates and becomes even smarter, while Expert 1 and Expert 3 starve. Within a few thousand training steps, the router sends 99% of all tokens to the same two experts, completely starving the rest of the pool. Your expensive MoE model has effectively collapsed back into an undersized dense model.<br><br>
+            To stop this collapse, engineers introduce an <strong>Auxiliary Load-Balancing Loss</strong> ($\mathcal{L}_{\text{aux}}$) into the training objective:<br><br>
+            $$\mathcal{L}_{\text{aux}} = \alpha \cdot E \sum_{i=1}^E f_i \cdot P_i$$<br><br>
+            Here, $f_i$ is the fraction of tokens in the batch actually dispatched to Expert $i$, and $P_i$ is the average routing probability assigned to Expert $i$ across the batch. The product $f_i \cdot P_i$ reaches its minimum only when tokens and probabilities are distributed uniformly across all $E$ experts. This mathematical penalty forces the router to spread tokens evenly across the entire pool. Modern architectures like DeepSeek also incorporate <strong>Shared Experts</strong>—one or two fixed FFNs that every token always visits to capture universal linguistic syntax, allowing the routed experts to focus strictly on specialized domain knowledge.
+          </p>
+
+          <h3>3. Production Systems Reality: Expert Parallelism and the All-to-All Bottleneck</h3>
+          <p>
+            While MoE drastically reduces FLOPs per token, it introduces significant complexity to distributed serving infrastructure. A 670B MoE model requires over 1.3 TB of memory in 16-bit precision (or ~350 GB in 4-bit quantization). Because it cannot fit on a single GPU, the experts must be partitioned across multiple GPUs using <strong>Expert Parallelism (EP)</strong>.<br><br>
+            In an 8-GPU node with 8 experts per layer, each GPU hosts exactly one expert. But consider what happens during batch inference: Token 1 on GPU 0 might need Expert 3 (on GPU 2), while Token 2 on GPU 1 needs Expert 7 (on GPU 6). Before the expert forward passes can begin, the GPUs must execute an <strong>All-to-All collective communication operation</strong> over high-speed NVLink or InfiniBand interconnects. GPU 0 transmits its token vectors to the appropriate remote GPUs, while simultaneously receiving tokens destined for its local expert.<br><br>
+            Once each expert computes its forward pass, a second All-to-All transfer is required to return the output activations back to the originating GPUs for the next attention layer. This communication pattern introduces two concrete production risks:<br>
+            • <strong>Straggler Bottlenecks</strong>: If a sudden burst of domain-specific tokens routes heavily toward Expert 4 on GPU 3, that GPU becomes overloaded. All other GPUs finish their compute in 2 milliseconds and sit completely idle, blocked on the overloaded node before they can complete the collective gather.<br>
+            • <strong>Memory Footprint vs. Throughput</strong>: While dense models can run efficiently on smaller GPU clusters by batching aggressively, MoE models require massive VRAM pools simply to keep all expert weights resident in memory—even though only a fraction of those weights are active on any given clock cycle.<br><br>
+            To mitigate these bottlenecks, serving engines like vLLM and TensorRT-LLM enforce an <strong>Expert Capacity Factor</strong> (capping the maximum number of tokens an expert can accept per step and dropping or rerouting overflows) and leverage custom Triton/CUDA kernels that fuse token dispatch directly inside GPU shared memory.
+          </p>
+
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            Dense models hit a compute ceiling because every single parameter must activate for every token. Mixture of Experts circumvents this limitation by using a lightweight Top-K gating network to route each token to only 2 specialized feed-forward sub-networks out of dozens available. This architectural shift decouples overall model parameter capacity from active per-token compute cost, delivering frontier intelligence at a fraction of the inference FLOPs. However, production MoE shifts the engineering bottleneck to distributed systems orchestration: teams must enforce auxiliary load-balancing loss to prevent expert starvation, and optimize inter-GPU All-to-All network transfers to prevent straggler nodes from bottlenecking cluster throughput.
+          </div>
+        </div>
+
+        <div class="ai-explainer-box">
+          <div class="ai-explainer-info">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
+          </div>
+          <div class="ai-btn-group">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'mixture-of-experts-sparse-routing')">
+              <i class="fa-solid fa-robot"></i> ChatGPT
+            </button>
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'mixture-of-experts-sparse-routing')">
+              <i class="fa-solid fa-brain"></i> Claude
+            </button>
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'mixture-of-experts-sparse-routing')">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
+            </button>
+          </div>
+        </div>
+
+        <div class="article-footer">
+          <span>Curated Tech Notes</span>
+          <span>Category: AI Architecture &amp; LLM Infra</span>
+        </div>
+      </article>
+
+      <!-- Article 3: September 10, 2026 -->
+      <article class="article-card" id="flash-attention-io-aware" data-category="ai" data-keywords="flashattention flash attention io aware kernel tiling online softmax hbm sram memory wall transformer attention multi head attention context length vllm triton cuda">
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">AI Engineering</span>
+            <span class="article-tag">GPU Architecture</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> September 10, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 6 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('flash-attention-io-aware', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
+        </div>
+
+        <h2 class="article-title">
+          FlashAttention: How IO-Aware Tiling and Online Softmax Broke the O(N²) Memory Wall
+        </h2>
+
+        <p class="article-summary">
+          Self-attention is mathematically straightforward, but naive implementations force GPUs to repeatedly stream massive intermediate matrices across the slow memory bus. FlashAttention reorganizes attention into SRAM-sized tiles and computes running softmax statistics on the fly without ever storing the full N×N matrix in DRAM. Here is how IO-aware design, online softmax fusion, and backward recomputation made long-context LLMs 2× to 4× faster.
+        </p>
+
+        <div class="article-body">
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: The Tiny Desk Notepad vs. Walking to the Warehouse Filing Cabinet
+            </div>
+            Imagine you are an accountant tasked with totaling up 10,000 receipts. Your desk has a tiny notepad (SRAM) that can only hold a few numbers at a time, but sitting down the hallway is a giant warehouse with endless filing cabinets (High-Bandwidth Memory / HBM).<br><br>
+            In standard attention, every time you multiply two numbers from your ledger, you walk all the way down the hallway to the warehouse, write that intermediate product on a sheet of paper, file it away, and walk back to your desk. To normalize the numbers (softmax), you walk back to the warehouse, open all 10,000 folders, add them up, walk back to the desk, divide each number, and walk back to refile them. Your legs are exhausted, and 95% of your workday is wasted walking down that hallway instead of doing actual arithmetic.<br><br>
+            FlashAttention gives you a smarter workflow: you bring a small stack of 100 receipts to your desk, calculate their partial results, and maintain a running maximum and running total directly on your desk notepad. As new batches arrive, you dynamically adjust the previous totals using simple rescaling math (the online softmax trick) and immediately write down the final answer. You never write that giant intermediate stack of 10,000 temporary numbers into the warehouse filing cabinets at all. You save miles of walking, keep your pencil moving, and finish the job in a fraction of the time.
+          </div>
+
+          <h3>1. The Real Bottleneck in Attention: Memory IO, Not Math</h3>
+          <p>
+            The standard scaled dot-product attention equation looks elegant on paper:<br><br>
+            $$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d}}\right)V$$<br><br>
+            Here, $Q, K, V \in \mathbb{R}^{N \times d}$, where $N$ is sequence length and $d$ is head dimension (typically 64 or 128). In a traditional PyTorch implementation, this equation is executed as three distinct operations:<br>
+            1. <strong>Matrix Multiplication</strong>: Compute the raw attention scores $S = QK^T$, producing an $N \times N$ matrix.<br>
+            2. <strong>Softmax Normalization</strong>: Compute $P = \text{softmax}(S)$ row-by-row, producing another $N \times N$ matrix.<br>
+            3. <strong>Value Weighting</strong>: Multiply $O = PV$ to generate the final $N \times d$ output vector.<br><br>
+            The fatal flaw is the intermediate size of $S$ and $P$. When context length $N$ reaches 16,384 tokens, an $N \times N$ matrix contains $16,384^2 \approx 268 \text{ million}$ elements. In 16-bit precision (FP16/BF16), that single intermediate matrix occupies <strong>536 MB of memory per attention head</strong>. Across 32 attention heads in a modern 70B model, storing $S$ and $P$ requires <strong>34 GB of GPU memory for just one single transformer layer</strong>!<br><br>
+            Because on-chip SRAM on an NVIDIA H100 GPU is tiny (~50 MB total across all Streaming Multiprocessors), standard implementations are forced to write the giant $S$ matrix out to slow off-chip High-Bandwidth Memory (HBM), read it back to apply softmax, write the $P$ matrix back to HBM, and read it back again to multiply by $V$. The GPU's Tensor Cores sit idle, starving for data while the memory bus is completely saturated with $O(N^2)$ memory reads and writes.
+          </p>
+
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 680 185" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="10" width="660" height="165" rx="10" fill="#0f1118" stroke="rgba(255,255,255,0.1)" stroke-dasharray="3,3" />
+              <rect x="25" y="22" width="190" height="140" rx="8" fill="#151822" stroke="#ef4444" stroke-width="1.2" />
+              <text x="120" y="42" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">1. STANDARD ATTENTION (NAIVE)</text>
+              <rect x="37" y="54" width="166" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" />
+              <text x="120" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Materializes S = QK^T &amp; P = softmax</text>
+              <text x="120" y="81" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">O(N^2) Huge Memory Footprint</text>
+              <rect x="37" y="94" width="166" height="36" rx="4" fill="rgba(239,68,68,0.12)" stroke="#ef4444" />
+              <text x="120" y="108" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Repeated HBM Read / Write</text>
+              <text x="120" y="122" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">HBM Choke: ~3.3 TB/s bus bottleneck</text>
+              <text x="120" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Massive Activations &amp; OOM Risks</text>
+              <line x1="215" y1="92" x2="235" y2="92" stroke="#38bdf8" stroke-width="2" />
+              <polygon points="235,92 228,88 228,96" fill="#38bdf8" />
+              <rect x="235" y="22" width="210" height="140" rx="8" fill="#151822" stroke="#38bdf8" stroke-width="1.2" />
+              <text x="340" y="42" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">2. FLASHATTENTION SRAM TILING</text>
+              <rect x="247" y="54" width="186" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" />
+              <text x="340" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Stream Tiles Q_i, K_j, V_j</text>
+              <text x="340" y="81" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">Fits into Fast On-Chip SRAM (19 TB/s)</text>
+              <rect x="247" y="94" width="186" height="36" rx="4" fill="rgba(56,189,248,0.12)" stroke="#38bdf8" />
+              <text x="340" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Online Softmax Accumulator</text>
+              <text x="340" y="122" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">Dynamic Rescaling: m_curr &amp; l_curr</text>
+              <text x="340" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Never Writes N&times;N Matrix to HBM</text>
+              <line x1="445" y1="92" x2="465" y2="92" stroke="#34d399" stroke-width="2" />
+              <polygon points="465,92 458,88 458,96" fill="#34d399" />
+              <rect x="465" y="22" width="190" height="140" rx="8" fill="#151822" stroke="#34d399" stroke-width="1.2" />
+              <text x="560" y="42" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">3. PERFORMANCE OUTCOME</text>
+              <rect x="477" y="54" width="166" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" />
+              <text x="560" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Memory Traffic Cut by 80-90%</text>
+              <text x="560" y="81" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">2&times; to 4&times; Wall-Clock Speedup</text>
+              <rect x="477" y="94" width="166" height="36" rx="4" fill="rgba(52,211,153,0.12)" stroke="#34d399" />
+              <text x="560" y="108" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Exact Attention (Zero Loss)</text>
+              <text x="560" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Unlocks 32k - 128k+ Context</text>
+              <text x="560" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Recomputes Blocks on Backprop &#x2714;</text>
+            </svg>
+          </div>
+
+          <h3>2. The Breakthrough: Block Tiling and Online Softmax Fusion</h3>
+          <p>
+            To eliminate the $O(N^2)$ memory traffic, Tri Dao and the Stanford team realized that attention must be computed in <strong>tiles (blocks)</strong> that fit entirely inside on-chip SRAM (~100 to 256 tokens per tile). But doing this was historically considered impossible because of the <strong>softmax denominator</strong>.<br><br>
+            Recall that softmax normalizes a vector $x$ using all elements in that row:<br><br>
+            $$P_i = \frac{e^{x_i - m}}{\sum_{j=1}^N e^{x_j - m}}, \quad \text{where } m = \max_{j} x_j$$<br><br>
+            Standard wisdom dictated that you couldn't compute any entry of $P_i$ until you had processed the entire sequence to find the true row maximum $m$ and the complete sum of exponentials $l = \sum e^{x_j - m}$. If you can't normalize without the whole row, how can you compute attention block-by-block?<br><br>
+            The answer is the <strong>Online Softmax trick</strong>. When processing a block of keys and values, you don't need the global maximum upfront. You maintain three running values in SRAM for each row: the running max $m_{\text{curr}}$, the running exponential sum $l_{\text{curr}}$, and the running output accumulator $O_{\text{curr}}$:<br><br>
+            • When a new block $B$ arrives with local max $m_{\text{new}}$, we update the global max: $m = \max(m_{\text{curr}}, m_{\text{new}})$.<br>
+            • We rescale our previous sum: $l = l_{\text{curr}} \cdot e^{m_{\text{curr}} - m} + \sum e^{B_j - m}$.<br>
+            • Crucially, we rescale our partial output accumulator: $O = O_{\text{curr}} \cdot \frac{l_{\text{curr}} \cdot e^{m_{\text{curr}} - m}}{l} + \frac{e^{B - m} V_B}{l}$.<br><br>
+            Because we can continuously correct earlier partial sums using simple exponential rescaling factors, we can loop over blocks of $K$ and $V$, accumulate their contributions into $O$ directly inside SRAM, and write only the final $N \times d$ output back to HBM. <strong>The giant $N \times N$ attention matrix is never materialized in DRAM at all.</strong>
+          </p>
+
+          <h3>3. Recomputation: Why Throwing Away Activations Makes Training Faster</h3>
+          <p>
+            In deep learning backpropagation, neural networks usually save all forward intermediate activations to memory so they can calculate gradients during the backward pass. For standard attention, storing the $N \times N$ matrices ($P$) across 80 layers causes out-of-memory (OOM) errors during long-context training.<br><br>
+            FlashAttention introduces an audacious architectural choice: <strong>it does not store the attention matrix $P$ during the forward pass at all</strong>. It only saves the compact $O(N)$ row statistics: the final maximum $m$ and exponential sum $l$.<br><br>
+            During the backward pass, whenever the gradient with respect to $Q$ or $K$ is required, FlashAttention loads the corresponding block of $Q, K, V$ into SRAM and <strong>recomputes the attention tile on the fly</strong>. At first glance, doing math twice sounds wasteful. But remember the hardware reality: modern GPUs have immense surplus compute (nearly 1,000 TFLOPs on an H100) but scarce memory bandwidth (3.3 TB/s).<br><br>
+            Recomputing a block of matrix multiplication inside SRAM is up to <strong>10× faster than reading a saved 500 MB activation matrix from HBM over the memory bus</strong>. By trading cheap FLOPs to save expensive memory IO, FlashAttention achieves exact mathematical equivalence (bit-for-bit identical to standard attention), cuts training memory footprint by up to 5×, and runs 2× to 4× faster than standard PyTorch attention.
+          </p>
+
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            Standard attention is choked not by floating-point arithmetic, but by repeatedly writing and reading massive O(N²) intermediate attention matrices over the slow GPU memory bus. FlashAttention overcomes this by tiling queries, keys, and values into fast on-chip SRAM and using online softmax to incrementally update attention outputs without ever materializing the N×N matrix in DRAM. By trading cheap compute for expensive memory bandwidth—even recomputing attention blocks on the fly during backward passes—it delivers a 2× to 4× speedup and unlocks 32k+ context lengths with exact mathematical equivalence.
+          </div>
+        </div>
+
+        <div class="ai-explainer-box">
+          <div class="ai-explainer-info">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
+          </div>
+          <div class="ai-btn-group">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'flash-attention-io-aware')">
+              <i class="fa-solid fa-robot"></i> ChatGPT
+            </button>
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'flash-attention-io-aware')">
+              <i class="fa-solid fa-brain"></i> Claude
+            </button>
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'flash-attention-io-aware')">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
+            </button>
+          </div>
+        </div>
+
+        <div class="article-footer">
+          <span>Curated Tech Notes</span>
+          <span>Category: AI Infrastructure &amp; LLM Serving</span>
+        </div>
+      </article>
+
+      <!-- Article 4: September 8, 2026 -->
+      <article class="article-card" id="memory-bound-llm-inference" data-category="ai" data-keywords="memory bound llm inference arithmetic intensity roofline model memory bandwidth hbm sram tensor cores prefill vs decode continuous batching quantization kv cache">
         <div class="article-header-top">
           <div class="article-meta">
             <span class="article-tag">AI Engineering</span>
