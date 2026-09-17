@@ -641,7 +641,7 @@ a {
           <input type="text" id="article-search" class="search-input" placeholder="Search tech articles, AI topics, keywords..." autocomplete="off">
         </div>
         <div class="filter-chips">
-          <button class="filter-chip active" data-category="all">All Articles (15)</button>
+          <button class="filter-chip active" data-category="all">All Articles (20)</button>
           <button class="filter-chip" data-category="ai">AI & LLM Infra</button>
           <button class="filter-chip" data-category="system-design">System Design</button>
           <button class="filter-chip" data-category="databases">Databases & Data Eng</button>
@@ -654,8 +654,242 @@ a {
   <main class="container">
     <div class="article-list" id="article-container">
 
+      <!-- Article: September 17, 2026 -->
+      <article class="article-card featured" id="bloom-filters-distributed-systems" data-category="system-design" data-keywords="bloom filters probabilistic data structures hash functions bit array false positives rocksdb cassandra distributed systems disk io reduction cache filtering">
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">System Design</span>
+            <span class="article-tag">Distributed Systems</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> September 17, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 6 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('bloom-filters-distributed-systems', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
+        </div>
+
+        <h2 class="article-title">
+          Bloom Filters: How Probabilistic Data Structures Eliminate Millions of Costly Disk Seeks
+        </h2>
+
+        <p class="article-summary">
+          In high-throughput databases and distributed caches, nothing kills read performance faster than random disk seeks for keys that do not exist. Traditional hash tables consume far too much memory to store every key in RAM. The Bloom filter—a space-efficient probabilistic data structure invented in 1970—solves this bottleneck with zero false negatives. By hashing keys into a compact bit array, storage engines like RocksDB, Apache Cassandra, and Bigtable determine whether a key is definitely absent before ever touching persistent storage. Here is the exact bitwise math, the optimal hash calculation, and how distributed systems use them.
+        </p>
+
+        <div class="article-body">
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: The Bouncer with the Stamped Hand-List vs. Searching Every VIP Suite
+            </div>
+            Imagine you manage an exclusive multi-story nightclub with 50 private VIP rooms spread across ten floors. A visitor arrives at the front entrance and asks: 'Is my friend Sarah inside?' Without an efficient gate check, a security guard would have to physically walk up five flights of stairs, open the door of every single one of the 50 VIP rooms, peer inside, and walk back down to report 'Nope, she isn't here.' If 5,000 people ask about missing friends every night, your security team spends their entire shift running up and down stairs looking for people who were never in the building to begin with.<br><br>Now imagine introducing a simple, ultra-fast <strong>Bloom Filter check</strong> right at the ground-floor door. You give the front doorman a small strip of paper with 1,000 checkboxes (a bit array) and three quick secret number formulas (hash functions). Whenever someone enters the club, the doorman passes their name through the three formulas—say they output numbers 42, 187, and 904—and puts a checkmark in those three boxes.<br><br>When a stranger arrives asking for Sarah, the doorman runs 'Sarah' through the exact same formulas. If box 187 is completely blank, the doorman stops immediately and says with <strong>100% mathematical certainty</strong>: 'Sarah is definitely NOT inside. Don't waste your time going upstairs.' You just eliminated an expensive, five-floor stair climb in 2 microseconds! Now, if all three boxes happen to have checkmarks, Sarah <em>might</em> be inside (or three other people checked those same boxes by coincidence—a false positive). The guard only walks up to inspect the rooms when all boxes match. In a storage engine like Cassandra or RocksDB, this tiny trick spares disks from doing millions of useless, mechanical seek operations every hour.
+          </div>
+
+          <h3>1. The Negative Lookup Trap: Why Non-Existent Keys Burn Disk I/O</h3>
+          <p>
+            In distributed key-value stores (such as Cassandra, ScyllaDB, RocksDB, and Google Bigtable), write paths are append-only. New updates and deletions land in immutable on-disk SSTables. Over hours of high-volume operations, dozens of SSTable files accumulate across disk tiers.<br><br>Now consider what happens when a client queries a key that does not exist in the database (or only exists in a single recent SSTable):<br>• The storage engine must search through the block indexes of multiple SSTable files on disk.<br>• Even on high-end NVMe drives, an unbuffered random block read incurs 50 to 100 microseconds of kernel I/O latency. On spinning disks, it takes 5 to 10 milliseconds of physical head seek time.<br>• Under sustained production traffic of 100,000 queries per second, queries for missing keys can saturate storage controllers, choke the operating system page cache, and degrade overall cluster throughput.<br><br>Keeping an exact hash index of every single key in RAM would eliminate disk seeks, but storing a 32-byte string key across 1 billion rows requires over 32 GB of memory just for key identifiers, not counting hash table overhead. We need a way to filter absent keys using a fraction of a byte per item.
+          </p>
+
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 680 185" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="660" height="165" rx="10" fill="#0f1118" stroke="rgba(255,255,255,0.1)" stroke-dasharray="3,3" /><rect x="25" y="22" width="190" height="140" rx="8" fill="#151822" stroke="#38bdf8" stroke-width="1.2" /><text x="120" y="42" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">1. HASHING &amp; INSERTION</text><rect x="37" y="54" width="166" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="120" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Input Key: 'user_4092'</text><text x="120" y="81" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">k Independent Hashes (k=3)</text><rect x="37" y="94" width="166" height="36" rx="4" fill="rgba(56,189,248,0.12)" stroke="#38bdf8" /><text x="120" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">h1=2, h2=7, h3=11</text><text x="120" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Set Bits: [2]=1, [7]=1, [11]=1</text><text x="120" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">~10 Bits / Key (1% Error)</text><line x1="215" y1="92" x2="235" y2="92" stroke="#f59e0b" stroke-width="2" /><polygon points="235,92 228,88 228,96" fill="#f59e0b" /><rect x="235" y="22" width="210" height="140" rx="8" fill="#151822" stroke="#f59e0b" stroke-width="1.2" /><text x="340" y="42" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">2. BIT ARRAY IN RAM (O(k))</text><rect x="247" y="54" width="186" height="34" rx="4" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" /><text x="340" y="68" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Query: Check Bit Positions</text><text x="340" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Bit [7] == 0 &rarr; DEFINITELY ABSENT</text><rect x="247" y="94" width="186" height="36" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="340" y="108" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Zero False Negatives (100% Safe)</text><text x="340" y="122" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Skip Disk Read Entirely!</text><text x="340" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Sub-Microsecond Memory Lookup</text><line x1="445" y1="92" x2="465" y2="92" stroke="#34d399" stroke-width="2" /><polygon points="465,92 458,88 458,96" fill="#34d399" /><rect x="465" y="22" width="190" height="140" rx="8" fill="#151822" stroke="#34d399" stroke-width="1.2" /><text x="560" y="42" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">3. DISK I/O AVOIDANCE</text><rect x="477" y="54" width="166" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="560" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">SSTables on NVMe / HDD</text><text x="560" y="81" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">99% Negative Reads Filtered</text><rect x="477" y="94" width="166" height="36" rx="4" fill="rgba(52,211,153,0.12)" stroke="#34d399" /><text x="560" y="108" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Disk Seeks Slashed</text><text x="560" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Protects OS Page Cache</text><text x="560" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Cassandra &amp; RocksDB Engine &#x2714;</text></svg>
+          </div>
+
+          <h3>2. How Bloom Filters Work: Bit Arrays and Hash Function Mathematics</h3>
+          <p>
+            Invented by Burton Howard Bloom in 1970, a <strong>Bloom Filter</strong> is a probabilistic data structure designed to test set membership in $O(k)$ time using tiny memory. It is composed of:<br>• A bit array of size $m$, initially filled with zeros: $[0, 0, 0, \dots, 0]$.<br>• A set of $k$ independent, uniform cryptographic-free hash functions (such as Murmur3, xxHash, or CityHash): $h_1(x), h_2(x), \dots, h_k(x)$, each mapping an input key to an index in range $[0, m-1]$.<br><br>• <strong>Insertion Pipeline</strong>: To insert a key $x$, the engine computes $k$ hash values: $i_1 = h_1(x) \pmod m, \dots, i_k = h_k(x) \pmod m$. The engine sets the bits at positions $i_1, \dots, i_k$ to 1 using bitwise OR operations.<br>• <strong>Query Pipeline</strong>: To test if key $y$ is in the set, the engine calculates the same $k$ bit positions. If <em>even a single bit</em> at any of those $k$ positions is 0, key $y$ was <strong>definitely never inserted</strong>. The query returns <code>false</code> immediately with zero probability of error (<strong>Zero False Negatives</strong>).<br>• <strong>The False Positive Probability ($p$)</strong>: If all $k$ bits are 1, the key might be in the set, or those bits were flipped by a combination of other inserted keys. The probability of a false positive is mathematically derived as:<br><br>$$p \approx \left(1 - e^{-kn/m}\right)^k$$<br><br>Given $n$ expected keys and an acceptable false positive rate $p$ (e.g., 1%), the optimal bit array size $m$ and number of hash functions $k$ are:<br><br>$$m = -\frac{n \ln p}{(\ln 2)^2} \approx 1.44 \cdot n \log_2\left(\frac{1}{p}\right) \quad \text{and} \quad k = \frac{m}{n} \ln 2 \approx 0.7 \cdot \frac{m}{n}$$<br><br>For a 1% false positive rate ($p = 0.01$), an engine needs only <strong>9.6 bits (~1.2 bytes) per key</strong> with $k = 7$ hash functions. Filtering 1 billion keys requires less than 1.2 GB of RAM—a 96% memory savings compared to raw key indexing.
+          </p>
+
+          <h3>3. Production Architectures: Cassandra, RocksDB, and Beyond</h3>
+          <p>
+            Bloom filters are deployed across nearly all high-performance distributed systems:<br><br>• <strong>Apache Cassandra and RocksDB SSTables</strong>: Every immutable SSTable file written to disk includes a serialized Bloom filter stored in its file footer or metadata block. When an SSTable is opened, its Bloom filter is loaded into off-heap RAM. When a read query arrives for key <code>user_10928</code>, the engine tests the in-memory Bloom filter for each SSTable before issuing any disk read. If the filter returns false, the engine completely skips reading that file, cutting physical disk seeks by over 95%.<br>• <strong>Web Crawlers & URL Deduplication</strong>: Large-scale search engines (like Google and Internet Archive) process tens of billions of URLs. A Bloom filter holding billions of URL hashes checks whether a page has already been crawled before dispatching an HTTP request, preventing duplicate crawler cycles.<br>• <strong>Cache Filtering (Preventing One-Hit Wonders)</strong>: High-speed CDNs (such as Cloudflare and Akamai) use Bloom filters to prevent caching objects that are requested only once. A lightweight Bloom filter records the first time an asset URL is requested; only when a URL hits the filter a second time is the asset promoted into expensive NVMe/RAM cache tiers.<br><br>• <strong>The Deletion Limitation</strong>: Standard Bloom filters do not support item deletion: setting a bit back to 0 could inadvertently delete other keys that share that bit. When deletion is required, systems employ <strong>Counting Bloom Filters</strong> (which use 4-bit integer counters instead of single bits) or <strong>Cuckoo Filters</strong> (which store fingerprints in hash buckets and support true dynamic removals).
+          </p>
+
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            In distributed key-value engines and LSM-tree storage systems, queries for keys that do not exist or reside in older SSTables can easily saturate disk I/O channels. Bloom filters provide an elegant, memory-efficient probabilistic defense: using a compact in-memory bit array and k independent hash functions, they guarantee zero false negatives. If the filter returns false, the engine knows with 100% mathematical certainty that the key does not exist on disk and skips expensive I/O entirely. Sized at roughly 10 bits per key, a Bloom filter achieves a ~1% false positive rate, cutting disk lookups by up to 99% while consuming negligible RAM.
+          </div>
+        </div>
+
+        <div class="ai-explainer-box">
+          <div class="ai-explainer-info">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
+          </div>
+          <div class="ai-btn-group">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'bloom-filters-distributed-systems')">
+              <i class="fa-solid fa-robot"></i> ChatGPT
+            </button>
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'bloom-filters-distributed-systems')">
+              <i class="fa-solid fa-brain"></i> Claude
+            </button>
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'bloom-filters-distributed-systems')">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
+            </button>
+          </div>
+        </div>
+
+        <div class="article-footer">
+          <span>Curated Tech Notes</span>
+          <span>Category: System Design & Storage Engines</span>
+        </div>
+      </article>
+
+      <!-- Article: September 16, 2026 -->
+      <article class="article-card" id="rope-rotary-position-embeddings" data-category="ai" data-keywords="rope rotary position embeddings su jianlin transformer self attention relative position context extension yarn nt-aware long context llama mistral inner product">
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">AI Engineering</span>
+            <span class="article-tag">Transformer Architecture</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> September 16, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 6 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('rope-rotary-position-embeddings', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
+        </div>
+
+        <h2 class="article-title">
+          Rotary Position Embeddings (RoPE): How Transformers Track Token Distance in High Dimensions
+        </h2>
+
+        <p class="article-summary">
+          Transformers have no inherent sense of word order: without positional information, self-attention treats sentences as unordered bags of words. Early models injected rigid absolute vectors or suffered from quadratic memory overhead with learned relative matrices. Rotary Position Embedding (RoPE)—the backbone of modern models like Llama 3, Mistral, and Gemma—solves this elegantly by rotating Query and Key vectors in 2D coordinate pairs. Here is the complex number geometry behind RoPE, why relative distance emerges naturally from inner products, and how context windows scale to 128k+ tokens via NTK-aware frequency scaling.
+        </p>
+
+        <div class="article-body">
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: The Wall Clock Hands vs. Sticky-Note Index Cards
+            </div>
+            Imagine you are reading a 500-page mystery novel and want to remember how far apart clues are. In early transformer models like standard GPT or BERT, the authors used <strong>absolute positional embeddings</strong>: they wrote a rigid page number on a yellow sticky note ('Page 1', 'Page 2', 'Page 3') and physically pasted that note directly onto the word vector ('sherlock' + 'page 14'). The problem was, if the model was trained on 2,000-word essays, it had never seen a 'Page 4,000' sticky note in its life. When handed a 10,000-word document, it had zero clue how to interpret distant page numbers, and it couldn't easily tell whether two clues were 5 words apart or 500 words apart without re-learning absolute coordinates.<br><br>Rotary Position Embeddings (RoPE) discard the sticky page notes entirely. Instead, imagine each word vector is represented as a set of hands on a mechanical clock face. When a token enters at position $m$, instead of adding an offset number to the vector, RoPE simply <strong>rotates the vector's hands</strong> by an angle proportional to position $m$ ($m \theta$).<br><br>Here is the genius: when token A at position $m$ attends to token B at position $n$ via a dot product, the math simplifies so that the resulting attention score depends purely on the difference between the angles: $(m - n)\theta$! The dot product doesn't care whether the tokens are at positions 5 and 7, or positions 50,005 and 50,007—the relative angle between their hands is identical. By rotating high frequencies for local words and ultra-low frequencies for distant words, RoPE lets models seamlessly recognize relative distance and smoothly extrapolate to massive context windows.
+          </div>
+
+          <h3>1. The Positional Dilemma: Why Transformers Need Positional Encodings</h3>
+          <p>
+            In the standard self-attention equation $\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$, the operation is strictly permutation-invariant. If you shuffle the words in an input sentence, the mathematical set of dot-product outputs remains completely unchanged. Yet in human language and code, order is everything: 'dog bites man' conveys the exact opposite meaning of 'man bites dog'.<br><br>Historically, researchers addressed this in two ways:<br>• <strong>Absolute Positional Encodings (Vaswani et al., 2017)</strong>: A predefined sinusoidal vector $p_i$ is added directly to token embedding $x_i$ before the first transformer layer: $\tilde{x}_i = x_i + p_i$. While simple, this corrupts semantic token representations with position artifacts and fails catastrophically when evaluating sequence lengths longer than the training window.<br>• <strong>Relative Positional Encodings (T5, ALiBi)</strong>: These modify the attention matrix directly by injecting relative distance biases $b_{i-j}$. While effective, they introduce custom attention score modifications that prevent efficient CUDA kernel fusion and break linear KV-cache memory structures.
+          </p>
+
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 680 185" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="660" height="165" rx="10" fill="#0f1118" stroke="rgba(255,255,255,0.1)" stroke-dasharray="3,3" /><rect x="25" y="22" width="190" height="140" rx="8" fill="#151822" stroke="#38bdf8" stroke-width="1.2" /><text x="120" y="42" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">1. 2D PAIRWISE SPLITTING</text><rect x="37" y="54" width="166" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="120" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Vector x &isin; &reals;^d (Query or Key)</text><text x="120" y="81" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">Split into d/2 Coordinate Pairs</text><rect x="37" y="94" width="166" height="36" rx="4" fill="rgba(56,189,248,0.12)" stroke="#38bdf8" /><text x="120" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Frequencies: &theta;_i = b^{-2i/d}</text><text x="120" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Local Fast &bull; Distant Slow</text><text x="120" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Zero Additive Distortion</text><line x1="215" y1="92" x2="235" y2="92" stroke="#f59e0b" stroke-width="2" /><polygon points="235,92 228,88 228,96" fill="#f59e0b" /><rect x="235" y="22" width="210" height="140" rx="8" fill="#151822" stroke="#f59e0b" stroke-width="1.2" /><text x="340" y="42" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">2. 2D ROTARY MULTIPLICATION</text><rect x="247" y="54" width="186" height="34" rx="4" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" /><text x="340" y="68" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Rotate by Angle &omega; = m &middot; &theta;_i</text><text x="340" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">[cos(m&theta;) -sin(m&theta;); sin(m&theta;) cos(m&theta;)]</text><rect x="247" y="94" width="186" height="36" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="340" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Preserves Norm: ||R(x)|| = ||x||</text><text x="340" y="122" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">In-Place Fused CUDA Kernel</text><text x="340" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">No Extra Memory Overhead</text><line x1="445" y1="92" x2="465" y2="92" stroke="#34d399" stroke-width="2" /><polygon points="465,92 458,88 458,96" fill="#34d399" /><rect x="465" y="22" width="190" height="140" rx="8" fill="#151822" stroke="#34d399" stroke-width="1.2" /><text x="560" y="42" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">3. RELATIVE INNER PRODUCT</text><rect x="477" y="54" width="166" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="560" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">&lang;R_m(q), R_n(k)&rang; = g(m - n)</text><text x="560" y="81" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">Pure Relative Offset (m - n)</text><rect x="477" y="94" width="166" height="36" rx="4" fill="rgba(52,211,153,0.12)" stroke="#34d399" /><text x="560" y="108" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">NTK / YaRN Long Context</text><text x="560" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Scales to 128k+ Context</text><text x="560" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Llama 3 &amp; Mistral Standard &#x2714;</text></svg>
+          </div>
+
+          <h3>2. The RoPE Formulation: Complex Planes and Pairwise 2D Rotations</h3>
+          <p>
+            Invented by Su Jianlin in 2021, <strong>Rotary Position Embedding (RoPE)</strong> asks a fundamental question: Can we find an operation $R(x, m)$ applied to vector $x$ at position $m$ such that the dot product of two transformed vectors depends <em>exclusively</em> on their relative offset $(m - n)$?<br><br>$$\langle R(q, m), R(k, n) \rangle = g(q, k, m - n)$$<br><br>Su Jianlin demonstrated that the only mathematical solution to this formulation is a rotation in the complex plane. To implement this on high-dimensional vectors, RoPE divides a $d$-dimensional Query or Key vector into $d/2$ pairs of two-dimensional coordinates $(x_{2i}, x_{2i+1})$. For each 2D pair at channel $i$, RoPE applies a 2D rotation matrix by angle $m \theta_i$:<br><br>$$\begin{pmatrix} q_{2i}^{(m)} \\ q_{2i+1}^{(m)} \end{pmatrix} = \begin{pmatrix} \cos(m\theta_i) & -\sin(m\theta_i) \\ \sin(m\theta_i) & \cos(m\theta_i) \end{pmatrix} \begin{pmatrix} q_{2i} \\ q_{2i+1} \end{pmatrix}$$<br><br>The frequencies are defined as $\theta_i = 10000^{-2(i-1)/d}$. Lower-index dimensions rotate rapidly (capturing local grammatical relationships like subject-verb pairs), while higher-index dimensions rotate slowly (tracking long-range thematic shifts across thousands of tokens).<br><br>• <strong>Inner Product Magic</strong>: When calculating $q_m^T k_n$, the rotation matrices multiply. By standard trigonometric identity $\cos(A)\cos(B) + \sin(A)\sin(B) = \cos(A - B)$, the absolute position terms cancel out entirely, leaving purely the relative distance angle $(m - n)\theta_i$. Relative distance is encoded directly inside the dot product without storing any cross-position bias matrices.
+          </p>
+
+          <h3>3. Context Extension: NTK-Aware Scaling, YaRN, and Long-Context Serving</h3>
+          <p>
+            Because RoPE relies on continuous rotation angles, it unlocks powerful techniques for extending context windows without training models from scratch:<br><br>• <strong>Linear Position Interpolation (PI)</strong>: To expand an 8k context window to 32k, you could simply downscale position indices by $4\times$ ($m' = m / 4$). However, compressing high-frequency local channels degrades the model's ability to distinguish immediately adjacent tokens, harming coding syntax and grammar.<br>• <strong>NTK-Aware RoPE Scaling</strong>: Drawing from Neural Tangent Kernel (NTK) theory, engineers recognized that high-frequency dimensions should stay fixed (preserving local precision), while low-frequency dimensions should be stretched (interpolating long distances). By dynamically scaling the base frequency constant from $\theta = 10,000$ to $\theta = 500,000$, models like Llama 3 expand their context window to 128,000 tokens while maintaining needle-in-a-haystack retrieval accuracy.<br>• <strong>YaRN (Yet another RoPE extensioN)</strong>: YaRN refines frequency scaling by applying a temperature ramp across frequency bands and applying length-correction factors to attention softmax entropy, allowing models to scale to 1M+ tokens with minimal fine-tuning steps.
+          </p>
+
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            Early positional embeddings either added rigid absolute vectors directly into token representations or incurred quadratic memory overhead through learned relative distance matrices. Rotary Position Embeddings (RoPE) solve this by rotating Query and Key vectors in 2D coordinate pairs by position-dependent angles (mθ). Because the dot product of two rotated vectors depends strictly on their relative offset (m - n), RoPE naturally injects relative position information while preserving the computational speed of absolute embeddings. RoPE forms the architectural foundation for nearly all modern frontier open models—including Llama 3, Mistral, and Gemma—enabling context window extension through NTK-aware and YaRN frequency scaling with zero retraining from scratch.
+          </div>
+        </div>
+
+        <div class="ai-explainer-box">
+          <div class="ai-explainer-info">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
+          </div>
+          <div class="ai-btn-group">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'rope-rotary-position-embeddings')">
+              <i class="fa-solid fa-robot"></i> ChatGPT
+            </button>
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'rope-rotary-position-embeddings')">
+              <i class="fa-solid fa-brain"></i> Claude
+            </button>
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'rope-rotary-position-embeddings')">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
+            </button>
+          </div>
+        </div>
+
+        <div class="article-footer">
+          <span>Curated Tech Notes</span>
+          <span>Category: AI Architecture & LLM Infra</span>
+        </div>
+      </article>
+
+      <!-- Article: September 15, 2026 -->
+      <article class="article-card" id="distributed-transactions-saga-pattern" data-category="system-design" data-keywords="distributed transactions saga pattern two phase commit 2pc choreo orchestration compensation transactions dual write outbox pattern eventual consistency microservices">
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">System Design</span>
+            <span class="article-tag">Microservices</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> September 15, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 6 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('distributed-transactions-saga-pattern', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
+        </div>
+
+        <h2 class="article-title">
+          Distributed Transactions: Why 2PC Fails in Microservices and How Sagas Keep State Consistent
+        </h2>
+
+        <p class="article-summary">
+          Splitting a monolithic database into isolated microservice datastores destroys native ACID transactions. The textbook academic solution—Two-Phase Commit (2PC)—fails in cloud production because holding locks across network hops destroys throughput and crashes availability whenever any single service stutters. The Saga Pattern trades instantaneous atomicity for eventual consistency, breaking multi-step workflows into isolated local transactions paired with compensating rollbacks. Here is how choreography vs. orchestration works, how to prevent dual-write bugs with the Transactional Outbox pattern, and how to design resilient distributed systems.
+        </p>
+
+        <div class="article-body">
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: The Vacation Booking Chain vs. Holding Every Hotel Room Hostage
+            </div>
+            Imagine planning a multi-city vacation where you must book a flight, reserve a hotel room, and rent a car. Under a <strong>Two-Phase Commit (2PC)</strong> model, you call the airline, hotel, and rental agency simultaneously and order them: 'Put a hard lock on these seats and rooms right now, don't let anyone else rent them, and stay on the phone holding the line until I confirm.' If the rental car desk's phone line drops or their agent steps away, the airline and hotel remain frozen on hold for hours, unable to sell their inventory to other travelers. If your cell battery dies midway, the entire cluster of businesses stays paralyzed.<br><br>The <strong>Saga Pattern</strong> approaches this like a savvy real-world traveler. You book the airline flight first and immediately pay for it (local transaction). Once the airline confirms your ticket, an automated notification triggers your hotel reservation. If the hotel suddenly turns around and says 'Sorry, we are completely booked out,' you don't panic or freeze the planet. Instead, your travel script fires a planned <strong>compensating action</strong>: it contacts the airline and clicks 'Refund / Cancel Flight' and restores your money.<br><br>Each step is an independent, fully committed local database transaction that never holds cross-service locks. If any domino fails along the line, a reverse chain of backward compensation transactions unwinds earlier steps, returning the overall distributed system to a pristine, balanced financial state.
+          </div>
+
+          <h3>1. The Microservice Dilemma: The Death of the Local ACID Transaction</h3>
+          <p>
+            In a monolithic architecture, executing a multi-step checkout workflow is straightforward: you open a single database transaction, insert an order row, charge a user balance, decrement warehouse inventory, and issue a <code>COMMIT</code>. The database storage engine enforces ACID atomicity—either all mutations succeed, or the entire block cleanly rolls back.<br><br>When migrating to microservices, every domain boundary owns its private datastore: the <em>Order Service</em> owns PostgreSQL, the <em>Payment Service</em> communicates with Stripe, and the <em>Inventory Service</em> manages MongoDB. You cannot open a single SQL transaction block across three separate databases living behind three REST or gRPC APIs.<br><br>If payment succeeds but inventory reservation fails, your platform enters an illegal, corrupt state: the customer was charged, but the item was never dispatched. Engineering teams must achieve cross-service eventual consistency without sacrificing uptime.
+          </p>
+
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 680 185" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="660" height="165" rx="10" fill="#0f1118" stroke="rgba(255,255,255,0.1)" stroke-dasharray="3,3" /><rect x="25" y="22" width="190" height="140" rx="8" fill="#151822" stroke="#38bdf8" stroke-width="1.2" /><text x="120" y="42" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">1. LOCAL TRANSACTION (T1)</text><rect x="37" y="54" width="166" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="120" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Order Service: Insert Order</text><text x="120" y="81" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">Local SQL Commit &#x2794; No Cross Locks</text><rect x="37" y="94" width="166" height="36" rx="4" fill="rgba(56,189,248,0.12)" stroke="#38bdf8" /><text x="120" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Transactional Outbox</text><text x="120" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Guaranteed Event &rarr; Kafka/Bus</text><text x="120" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Order Status: PENDING</text><line x1="215" y1="92" x2="235" y2="92" stroke="#f59e0b" stroke-width="2" /><polygon points="235,92 228,88 228,96" fill="#f59e0b" /><rect x="235" y="22" width="210" height="140" rx="8" fill="#151822" stroke="#f59e0b" stroke-width="1.2" /><text x="340" y="42" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">2. SAGA ORCHESTRATOR / STEP (T2)</text><rect x="247" y="54" width="186" height="34" rx="4" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" /><text x="340" y="68" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Payment Service: Charge Balance</text><text x="340" y="81" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Payment Committed Successfully</text><rect x="247" y="94" width="186" height="36" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="340" y="108" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Step T3 Fails: Out of Stock!</text><text x="340" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Inventory Throws InsufficientCapacity</text><text x="340" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Trigger Compensation Rollbacks</text><line x1="445" y1="92" x2="465" y2="92" stroke="#34d399" stroke-width="2" /><polygon points="465,92 458,88 458,96" fill="#34d399" /><rect x="465" y="22" width="190" height="140" rx="8" fill="#151822" stroke="#34d399" stroke-width="1.2" /><text x="560" y="42" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">3. COMPENSATING ROLLBACK (C2, C1)</text><rect x="477" y="54" width="166" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="560" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">C2: Refund Payment Card</text><text x="560" y="81" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">Idempotent Financial Refund</text><rect x="477" y="94" width="166" height="36" rx="4" fill="rgba(52,211,153,0.12)" stroke="#34d399" /><text x="560" y="108" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">C1: Set Order CANCELLED</text><text x="560" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Zero Lingering Inconsistency</text><text x="560" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Eventual Consistency Achieved &#x2714;</text></svg>
+          </div>
+
+          <h3>2. Why Two-Phase Commit (2PC) is a Distributed Anti-Pattern</h3>
+          <p>
+            Before microservices, enterprise systems turned to distributed transaction protocols like <strong>Two-Phase Commit (2PC)</strong> (e.g., XA transactions with coordinated resource managers):<br><br>• <strong>Phase 1 (Prepare)</strong>: A central coordinator asks every participating database node: <em>'Can you commit this transaction?'</em> Each node writes the mutation to its local log, locks the affected rows, and replies with <em>'Vote Commit'</em>.<br>• <strong>Phase 2 (Commit)</strong>: If all nodes vote affirmatively, the coordinator broadcasts an official <em>'Commit'</em> directive. If any single node votes no (or times out), the coordinator broadcasts a <em>'Rollback'</em>.<br><br>While mathematically sound, 2PC is disastrous for cloud microservices:<br>1. <strong>Blocking Locks Across Networks</strong>: During the entire duration between Phase 1 and Phase 2, every participating database holds exclusive table or row locks. Because these locks span high-latency network hops and variable external API calls, transaction latency jumps by orders of magnitude.<br>2. <strong>Coordinator Single Point of Failure</strong>: If the coordinator crashes after nodes have voted to prepare, participating databases remain stranded in an uncertain state, holding locked rows indefinitely and refusing other writes.<br>3. <strong>Availability Killer (CAP Theorem)</strong>: If a single microservice is experiencing a cold restart or network blip, 100% of multi-service transactions fail globally. System availability degrades to the product of the individual availabilities of every involved node ($A_{\text{total}} = A_1 \times A_2 \times A_3$).
+          </p>
+
+          <h3>3. The Saga Pattern: Choreography vs. Orchestration and Compensations</h3>
+          <p>
+            First proposed by Hector Garcia-Molina and Kenneth Salem in 1987, the <strong>Saga Pattern</strong> replaces one massive distributed transaction with a series of local database transactions: $T_1, T_2, T_3, \dots, T_n$. Each local transaction modifies its private database and publishes an event to trigger the next step. To preserve consistency on failure, every transaction $T_i$ is paired with an idempotent <strong>Compensating Transaction</strong> $C_i$ that semantically undoes its changes.<br><br>There are two primary ways to coordinate Sagas:<br>• <strong>1. Choreography (Event-Driven)</strong>: There is no central controller. The Order Service commits an order and publishes <code>OrderCreated</code> to Kafka. The Payment Service listens, processes payment, and emits <code>PaymentCompleted</code>. If Payment fails, it emits <code>PaymentFailed</code>, and the Order Service listens to execute $C_1$ (cancelling the order). While simple for 2-3 services, choreography becomes an unmaintainable web of circular event dependencies as workflows grow.<br>• <strong>2. Orchestration (State Machine)</strong>: A dedicated Saga Orchestrator (implemented via Temporal, AWS Step Functions, or a dedicated workflow service) manages the execution flow. The orchestrator sends explicit command messages to worker services (e.g., 'Execute Payment'), tracks responses, and automatically dispatches compensating actions in reverse order if a step reports an error.<br><br>• <strong>The Dual-Write Trap & The Outbox Pattern</strong>: How do you guarantee a database update and a message broker publish happen together without losing events? By implementing the <strong>Transactional Outbox Pattern</strong>: instead of publishing to Kafka directly, your service writes the domain data AND the outgoing event into an <code>outbox</code> table within the exact same local SQL transaction. A background Debezium CDC (Change Data Capture) connector or polling worker tails the database transaction log and publishes events with guaranteed at-least-once delivery.
+          </p>
+
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            Distributed transactions cannot rely on classic Two-Phase Commit (2PC) in cloud environments because coordinator failures and cross-network lock holding crush throughput and create systemic availability bottlenecks. The Saga pattern trades rigid ACID atomicity for eventual consistency by breaking business workflows into a sequence of isolated local transactions coupled with idempotent compensating actions. When orchestrating Sagas alongside the Transactional Outbox pattern, microservices maintain bulletproof data integrity across independent datastores without ever holding blocking locks across network boundaries.
+          </div>
+        </div>
+
+        <div class="ai-explainer-box">
+          <div class="ai-explainer-info">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
+          </div>
+          <div class="ai-btn-group">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'distributed-transactions-saga-pattern')">
+              <i class="fa-solid fa-robot"></i> ChatGPT
+            </button>
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'distributed-transactions-saga-pattern')">
+              <i class="fa-solid fa-brain"></i> Claude
+            </button>
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'distributed-transactions-saga-pattern')">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
+            </button>
+          </div>
+        </div>
+
+        <div class="article-footer">
+          <span>Curated Tech Notes</span>
+          <span>Category: System Design & Distributed Transactions</span>
+        </div>
+      </article>
+
       <!-- Article 1: September 14, 2026 -->
-      <article class="article-card featured" id="lora-qlora-fine-tuning" data-category="ai" data-keywords="lora qlora peft low rank adaptation low rank matrix factorization rank r alpha scaling 4-bit normalfloat nf4 double quantization paged optimizers bitsandbytes triton frozen base weights">
+      <article class="article-card" id="lora-qlora-fine-tuning" data-category="ai" data-keywords="lora qlora peft low rank adaptation low rank matrix factorization rank r alpha scaling 4-bit normalfloat nf4 double quantization paged optimizers bitsandbytes triton frozen base weights">
         <div class="article-header-top">
           <div class="article-meta">
             <span class="article-tag">AI Engineering</span>
@@ -1036,6 +1270,84 @@ a {
         </div>
       </article>
 
+      <!-- Article: September 11, 2026 -->
+      <article class="article-card" id="database-isolation-levels-mvcc" data-category="databases" data-keywords="database isolation levels mvcc multi version concurrency control dirty reads non-repeatable reads phantom reads snapshot isolation postgresql xmin xmax write skew serialization">
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">Databases</span>
+            <span class="article-tag">Concurrency Control</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> September 11, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 6 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('database-isolation-levels-mvcc', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
+        </div>
+
+        <h2 class="article-title">
+          Database Isolation Levels & MVCC: How Engines Stop Race Conditions Without Freezing Reads
+        </h2>
+
+        <p class="article-summary">
+          In high-concurrency systems, naive table or row locking crushes throughput by making readers wait for writers and writers wait for readers. Relational engines like PostgreSQL and MySQL InnoDB solve this bottleneck using Multi-Version Concurrency Control (MVCC) and standard SQL transaction isolation levels. By storing multiple tuple versions with creation (xmin) and expiration (xmax) metadata, queries inspect consistent point-in-time snapshots without locking. Here is how dirty reads, phantom reads, and write skew occur, and how MVCC prevents race conditions.
+        </p>
+
+        <div class="article-body">
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: The Carbon-Copy Duplicate Slips vs. Locking the Entire Hallway
+            </div>
+            Imagine a busy county land-registry office where citizens constantly look up property deeds while clerks update deeds during sales. If the office operated using simple two-phase locking (2PL), every time a clerk began updating a deed for parcel #42, they would lock the entire deed cabinet or the room. Every researcher trying to read any deed would stand in a frozen queue in the hallway until the clerk finished signing, stamping, and filing twenty minutes later.<br><br>MVCC solves this with carbon copies. When you walk up to the counter at 10:00 AM, the clerk hands you a snapshot carbon-copy folio of the registry marked 'Valid as of 10:00 AM' (your transaction ID snapshot). You sit at a table reading peaceably. Meanwhile, another clerk updates parcel #42 at 10:05 AM. They do not scribble over your carbon slip or rip it out of your hands; they simply create a fresh new folio marked 'Effective 10:05 AM' and mark the old version with an expiration stamp.<br><br>Your reading transaction never blocks their write, and their writing transaction never halts your reading. When all readers who held the 10:00 AM snapshot finish and leave the building, a night cleaner walks by with a shredder (PostgreSQL VACUUM) to safely compost the dead, obsolete slips that nobody can ever look at again.
+          </div>
+
+          <h3>1. Concurrency Anomalies: Dirty Reads, Non-Repeatable Reads, and Phantoms</h3>
+          <p>
+            When dozens of client connections query and mutate a relational database simultaneously, transactions can interfere with one another in four classic ways defined by the ANSI SQL-92 standard:<br><br>• <strong>Dirty Read</strong>: Transaction A modifies a row but has not yet committed. Transaction B reads that uncommitted modification. If Transaction A subsequently aborts and rolls back, Transaction B operated on phantom data that never officially existed.<br>• <strong>Non-Repeatable Read (Fuzzy Read)</strong>: Transaction A reads row 10 (e.g., account balance = $100). Transaction B modifies row 10 to $50 and commits. Transaction A reads row 10 a second time within the same transaction block and discovers the balance has mysteriously changed.<br>• <strong>Phantom Read</strong>: Transaction A executes a range query: <code>SELECT * FROM orders WHERE status = 'PENDING'</code>, returning 3 rows. Transaction B inserts a new pending order and commits. Transaction A re-runs the exact same query and discovers 4 rows have materialized out of thin air.<br>• <strong>Write Skew</strong>: A subtle anomaly where two concurrent transactions read overlapping data, verify an integrity invariant (e.g., 'at least one on-call doctor must remain active'), and execute disjoint updates (Doctor 1 signs off while Doctor 2 signs off simultaneously), leaving zero doctors active.
+          </p>
+
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 680 185" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="660" height="165" rx="10" fill="#0f1118" stroke="rgba(255,255,255,0.1)" stroke-dasharray="3,3" /><rect x="25" y="22" width="190" height="140" rx="8" fill="#151822" stroke="#38bdf8" stroke-width="1.2" /><text x="120" y="42" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">1. IMMUTABLE TUPLE STORAGE</text><rect x="37" y="54" width="166" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="120" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Tuple A: [xmin=100, xmax=105]</text><text x="120" y="81" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">Replaced by Tx 105</text><rect x="37" y="94" width="166" height="36" rx="4" fill="rgba(56,189,248,0.12)" stroke="#38bdf8" /><text x="120" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Tuple B: [xmin=105, xmax=0]</text><text x="120" y="122" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Live Row Version</text><text x="120" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Zero In-Place Overwrites</text><line x1="215" y1="92" x2="235" y2="92" stroke="#f59e0b" stroke-width="2" /><polygon points="235,92 228,88 228,96" fill="#f59e0b" /><rect x="235" y="22" width="210" height="140" rx="8" fill="#151822" stroke="#f59e0b" stroke-width="1.2" /><text x="340" y="42" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">2. SNAPSHOT VISIBILITY RULES</text><rect x="247" y="54" width="186" height="34" rx="4" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" /><text x="340" y="68" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Tx 102 Snapshot Horizon</text><text x="340" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Reads Tuple A (xmin &le; 102 &lt; xmax)</text><rect x="247" y="94" width="186" height="36" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="340" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Tx 108 Snapshot Horizon</text><text x="340" y="122" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">Reads Tuple B (xmin=105, xmax=0)</text><text x="340" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Readers Never Block Writers</text><line x1="445" y1="92" x2="465" y2="92" stroke="#34d399" stroke-width="2" /><polygon points="465,92 458,88 458,96" fill="#34d399" /><rect x="465" y="22" width="190" height="140" rx="8" fill="#151822" stroke="#34d399" stroke-width="1.2" /><text x="560" y="42" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">3. VACUUM &amp; SERIALIZATION</text><rect x="477" y="54" width="166" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="560" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Postgres Autovacuum</text><text x="560" y="81" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">Reclaims Dead Tuples</text><rect x="477" y="94" width="166" height="36" rx="4" fill="rgba(52,211,153,0.12)" stroke="#34d399" /><text x="560" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Serializable Snapshot (SSI)</text><text x="560" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Detects Write-Skew Cycles</text><text x="560" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Relational Concurrency Standard &#x2714;</text></svg>
+          </div>
+
+          <h3>2. How MVCC Works: Tuples, xmin, xmax, and Visibility Checks</h3>
+          <p>
+            To prevent these anomalies without resorting to coarse-grained read locks that grind databases to a halt, modern storage engines use <strong>Multi-Version Concurrency Control (MVCC)</strong>.<br><br>In PostgreSQL, tables are stored as heaps of row versions called <strong>tuples</strong>. Instead of overwriting bytes in place when a row updates, PostgreSQL creates a brand-new tuple in the table page and updates pointers. Each tuple contains internal header fields:<br>• <code>xmin</code>: The 32-bit transaction ID (XID) of the transaction that inserted this tuple.<br>• <code>xmax</code>: The transaction ID that deleted or replaced this tuple (initially 0 for live rows).<br><br>When Transaction $T$ starts under <strong>Snapshot Isolation</strong>, the engine captures a snapshot containing the current transaction status: active transaction IDs, lowest uncommitted XID, and highest committed XID. As Transaction $T$ scans a table, it checks the visibility of every tuple:<br>1. If <code>xmin</code> is not committed or is greater than $T$'s snapshot horizon, the tuple is invisible.<br>2. If <code>xmin</code> is committed and <code>xmax</code> is 0 (or uncommitted/greater than snapshot), the tuple is visible.<br>3. If <code>xmax</code> is committed before $T$'s snapshot, the row was deleted before $T$ looked, making it invisible.<br><br>Because every reader evaluates visibility against its own static snapshot, <strong>readers never block writers, and writers never block readers</strong>.
+          </p>
+
+          <h3>3. The Four Isolation Levels and the Engine Garbage Collector</h3>
+          <p>
+            The SQL standard defines four isolation levels, trading concurrency performance for strict correctness:<br><br>• <strong>Read Uncommitted</strong>: Readers see dirty, uncommitted rows. (PostgreSQL treats this identically to Read Committed; MySQL InnoDB supports it via raw reads).<br>• <strong>Read Committed (Default in Postgres)</strong>: Each statement in a transaction sees a fresh snapshot of all data committed before that individual statement began. Prevents dirty reads, but permits non-repeatable reads between statements.<br>• <strong>Repeatable Read (Snapshot Isolation)</strong>: The snapshot is frozen at the beginning of the entire transaction block. Every statement in the transaction sees identical state throughout. Prevents dirty reads, non-repeatable reads, and phantom reads.<br>• <strong>Serializable (SSI)</strong>: The highest guarantee. Emulates strictly sequential execution. PostgreSQL uses Serializable Snapshot Isolation (SSI), which tracks read-write dependency locks (SIREAD locks) in memory. If the engine detects a cycle in the dependency graph (indicating potential write skew), it automatically aborts one of the conflicting transactions with a serialization error.<br><br>• <strong>The MVCC Tax (Table Bloat & VACUUM)</strong>: The core drawback of MVCC is dead tuples. Deleted and overwritten rows remain on disk until no active transaction can possibly see them. In PostgreSQL, the <strong>autovacuum</strong> daemon continuously scans pages, clears dead tuple references, updates free space maps, and freezes old transaction IDs to prevent 32-bit XID wraparound.
+          </p>
+
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            High-performance transactional databases avoid read-write lock contention by turning mutations into versioned, immutable snapshots through Multi-Version Concurrency Control (MVCC). By tagging every tuple with creation (xmin) and expiration (xmax) transaction IDs, engines ensure readers never block writers and writers never block readers. However, Snapshot Isolation alone does not stop complex write skew anomalies—true serializability requires Serializable Snapshot Isolation (SSI) to track dependency cycles in flight, alongside background vacuuming to reclaim obsolete row versions.
+          </div>
+        </div>
+
+        <div class="ai-explainer-box">
+          <div class="ai-explainer-info">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
+          </div>
+          <div class="ai-btn-group">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'database-isolation-levels-mvcc')">
+              <i class="fa-solid fa-robot"></i> ChatGPT
+            </button>
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'database-isolation-levels-mvcc')">
+              <i class="fa-solid fa-brain"></i> Claude
+            </button>
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'database-isolation-levels-mvcc')">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
+            </button>
+          </div>
+        </div>
+
+        <div class="article-footer">
+          <span>Curated Tech Notes</span>
+          <span>Category: Databases & Concurrency Control</span>
+        </div>
+      </article>
+
       <!-- Article 3: September 10, 2026 -->
       <article class="article-card" id="flash-attention-io-aware" data-category="ai" data-keywords="flashattention flash attention io aware kernel tiling online softmax hbm sram memory wall transformer attention multi head attention context length vllm triton cuda">
         <div class="article-header-top">
@@ -1164,6 +1476,84 @@ a {
         <div class="article-footer">
           <span>Curated Tech Notes</span>
           <span>Category: AI Infrastructure &amp; LLM Serving</span>
+        </div>
+      </article>
+
+      <!-- Article: September 9, 2026 -->
+      <article class="article-card" id="raft-consensus-algorithm" data-category="system-design" data-keywords="raft consensus leader election log replication distributed state machine split brain term quorum etcd consul kubernetes heartbeat">
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">System Design</span>
+            <span class="article-tag">Distributed Systems</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> September 9, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 6 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('raft-consensus-algorithm', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
+        </div>
+
+        <h2 class="article-title">
+          Raft Consensus: How Clustered Nodes Agree on State Without Split-Brain
+        </h2>
+
+        <p class="article-summary">
+          In distributed infrastructure like Kubernetes and etcd, keeping nodes in sync across unreliable networks is a notoriously hard challenge. Paxos solved it mathematically but proved notoriously difficult to implement in production software. The Raft consensus algorithm decomposes agreement into three clear phases: leader election, log replication, and safety invariants. Here is how randomized timers stop election ties, how majority quorums prevent split-brain during network partitions, and how commits flow safely into replicated state machines.
+        </p>
+
+        <div class="article-body">
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: The Parliamentary Committee with Term Limits and Hand-Numbered Ledgers
+            </div>
+            Imagine a city council of five aldermen who must record every town expenditure into an official ledger. Because council members live across town and courier pigeons occasionally get lost or delayed, they cannot vote simultaneously in person on every single invoice. Instead, they elect a single Committee Chairman for a fixed election term.<br><br>The Chairman receives all incoming invoices from citizens, writes each one onto an append-only draft sheet, and dispatches couriers carrying copies of the invoice to the other four aldermen. Each alderman reads the copy, checks that it matches the Chairman's official term and sequence number, and signs off saying 'Received'. Once the Chairman receives sign-offs from a majority (at least 3 out of 5, including himself), he stamps the invoice as 'Officially Committed' and writes it permanently into the city ledger, sending a follow-up confirmation to everyone else.<br><br>If the couriers stop arriving from the Chairman because his carriage broke down, any alderman's pocket stopwatch will ring. That alderman increments the election term counter, raises their hand as a candidate, and asks for votes. If a split vote happens, randomized timers ensure that one alderman wakes up faster next time and collects the majority. Even if communication breaks down across town, two competing chairmen can never commit conflicting expenses because a majority quorum (3 out of 5) can only exist on one side of a partition at any given time.
+          </div>
+
+          <h3>1. The Distributed Consensus Dilemma: Why Paxos Was Replaced by Raft</h3>
+          <p>
+            A fundamental rule of distributed systems is that networks are unreliable: packets get delayed, duplicated, reordered, or dropped entirely. Yet distributed backends—such as Kubernetes (via etcd), CockroachDB, and Apache Kafka (KRaft)—require a cluster of machines to behave as if they were a single, highly available computer executing commands in identical sequence.<br><br>For decades, Leslie Lamport's <strong>Paxos</strong> was the theoretical gold standard for reaching consensus across faulty nodes. However, Paxos is notoriously abstract and difficult to translate into practical software implementations. Diego Ongaro and John Ousterhout introduced <strong>Raft</strong> in 2014 at Stanford specifically designed for understandability. Instead of solving consensus through generalized multi-decree rounds, Raft introduces strong leader-driven coordination, decomposing consensus into three separate subproblems:<br>• <strong>Leader Election</strong>: Electing a single coordinator when the existing leader crashes or disconnects.<br>• <strong>Log Replication</strong>: Accepting commands from clients, writing them to an append-only log, and forcing follower nodes to match the leader's exact log sequence.<br>• <strong>Safety Guarantees</strong>: Ensuring that if any server applies a log entry at a given index to its state machine, no other server will ever apply a different entry for that same index.
+          </p>
+
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 680 185" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="660" height="165" rx="10" fill="#0f1118" stroke="rgba(255,255,255,0.1)" stroke-dasharray="3,3" /><rect x="25" y="22" width="190" height="140" rx="8" fill="#151822" stroke="#38bdf8" stroke-width="1.2" /><text x="120" y="42" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">1. LEADER ELECTION</text><rect x="37" y="54" width="166" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="120" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Randomized Timeout: 150-300ms</text><text x="120" y="81" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">Follower &rarr; Candidate (Term + 1)</text><rect x="37" y="94" width="166" height="36" rx="4" fill="rgba(56,189,248,0.12)" stroke="#38bdf8" /><text x="120" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Broadcast RequestVote</text><text x="120" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Quorum Wins: &ge; 3 of 5 Votes</text><text x="120" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">No Split-Vote Deadlocks</text><line x1="215" y1="92" x2="235" y2="92" stroke="#f59e0b" stroke-width="2" /><polygon points="235,92 228,88 228,96" fill="#f59e0b" /><rect x="235" y="22" width="210" height="140" rx="8" fill="#151822" stroke="#f59e0b" stroke-width="1.2" /><text x="340" y="42" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">2. LOG REPLICATION &amp; HEARTBEATS</text><rect x="247" y="54" width="186" height="34" rx="4" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" /><text x="340" y="68" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Leader Dispatches AppendEntries</text><text x="340" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Command + PrevLogIndex + PrevTerm</text><rect x="247" y="94" width="186" height="36" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="340" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Followers Check History Consistency</text><text x="340" y="122" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">Strict Majority Ack (&ge; 3 Nodes)</text><text x="340" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Unidirectional Log Flow</text><line x1="445" y1="92" x2="465" y2="92" stroke="#34d399" stroke-width="2" /><polygon points="465,92 458,88 458,96" fill="#34d399" /><rect x="465" y="22" width="190" height="140" rx="8" fill="#151822" stroke="#34d399" stroke-width="1.2" /><text x="560" y="42" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">3. COMMIT &amp; STATE MACHINE</text><rect x="477" y="54" width="166" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="560" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">CommitIndex Advanced</text><text x="560" y="81" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">Entry Applied to State Machine</text><rect x="477" y="94" width="166" height="36" rx="4" fill="rgba(52,211,153,0.12)" stroke="#34d399" /><text x="560" y="108" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Leader Responds to Client</text><text x="560" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Partition-Proof Consistency</text><text x="560" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">etcd &amp; Kubernetes Core &#x2714;</text></svg>
+          </div>
+
+          <h3>2. The Three States and Randomized Election Timers</h3>
+          <p>
+            At any moment, every node in a Raft cluster operates in one of three distinct roles: <strong>Leader</strong>, <strong>Follower</strong>, or <strong>Candidate</strong>.<br><br>Time in Raft is divided into arbitrary numbered <strong>Terms</strong> (logical epochs acting as timestamps). Each term begins with an election:<br>• <strong>Heartbeats & Inactivity</strong>: Under normal operation, the leader continuously sends empty append-entries heartbeats to all followers at rapid intervals (e.g., every 50ms). Each follower resets its internal election countdown timer upon receiving a heartbeat.<br>• <strong>Triggering an Election</strong>: If a follower hears no heartbeat within its election timeout, it assumes the leader is dead. The follower increments the current term, transitions to <strong>Candidate</strong> status, votes for itself, and broadcasts a <code>RequestVote</code> RPC to all peer nodes.<br>• <strong>The Magic of Randomized Timeouts</strong>: If multiple followers detect the leader's failure simultaneously, they could all declare candidacy at the exact same moment, splitting the vote evenly (e.g., in a 5-node cluster, receiving 2 votes each) and forcing endless election deadlocks. Raft solves this using <strong>randomized election timeouts</strong> (typically randomized between 150ms and 300ms for each node). The node with the fastest timer wakes up first, increments its term, broadcasts vote requests, and secures a majority quorum before competitors even finish counting down.
+          </p>
+
+          <h3>3. Log Replication, Quorum Math, and Partition Resilience</h3>
+          <p>
+            Once a leader is elected, all client read-write operations flow exclusively through it. The client submits a command; the leader appends the command to its local log and broadcasts an <code>AppendEntries</code> RPC containing the new log entry along with the index and term of the preceding entry.<br><br>• <strong>Two-Phase State Commit</strong>: Follower nodes check the previous log index. If their local log matches the leader's history up to that point, they append the entry and send an acknowledgment. Once the leader receives positive acknowledgments from a strict majority quorum ($N/2 + 1$), the leader marks the entry as <strong>committed</strong>, executes the command against its local finite state machine, and returns the result to the client.<br>• <strong>Handling Network Partitions (Split-Brain Prevention)</strong>: Consider a 5-node cluster split by a network partition into two isolated islands: a minority group of 2 nodes and a majority group of 3 nodes. If the existing leader is trapped in the minority partition, it may continue receiving writes. However, it can only collect 2 votes out of 5—falling short of the required 3-node quorum. It can never commit those entries.<br>• Meanwhile, the 3 nodes on the majority side will timeout, elect a fresh leader with a higher term counter, and successfully commit client operations. When the network heals, the old minority leader discovers the higher term number, steps down to follower status immediately, and overwrites its uncommitted logs with the majority leader's authoritative history.
+          </p>
+
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            Raft decomposes distributed consensus into three distinct, understandable subproblems: leader election, log replication, and safety. By using randomized election timeouts, Raft eliminates perpetual split-vote stalemates during leader selection. By enforcing that logs flow strictly unidirectionally from the leader to followers and requiring a strict majority quorum (N/2 + 1) before committing an entry, Raft guarantees that committed state machine entries are immutable and immune to network partitions.
+          </div>
+        </div>
+
+        <div class="ai-explainer-box">
+          <div class="ai-explainer-info">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
+          </div>
+          <div class="ai-btn-group">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'raft-consensus-algorithm')">
+              <i class="fa-solid fa-robot"></i> ChatGPT
+            </button>
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'raft-consensus-algorithm')">
+              <i class="fa-solid fa-brain"></i> Claude
+            </button>
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'raft-consensus-algorithm')">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
+            </button>
+          </div>
+        </div>
+
+        <div class="article-footer">
+          <span>Curated Tech Notes</span>
+          <span>Category: System Design & Distributed Consensus</span>
         </div>
       </article>
 

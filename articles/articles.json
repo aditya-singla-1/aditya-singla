@@ -1,8 +1,13 @@
 [
+  "2026-09-17-bloom-filters-distributed-systems.json",
+  "2026-09-16-rope-rotary-position-embeddings.json",
+  "2026-09-15-distributed-transactions-saga-pattern.json",
   "2026-09-14-lora-qlora-fine-tuning.json",
   "2026-09-13-lsm-trees-vs-b-trees.json",
   "2026-09-12-mixture-of-experts-sparse-routing.json",
+  "2026-09-11-database-isolation-levels-mvcc.json",
   "2026-09-10-flash-attention-io-aware.json",
+  "2026-09-09-raft-consensus-algorithm.json",
   "2026-09-08-memory-bound-llm-inference.json",
   "2026-09-07-consistent-hashing-system-design.json",
   "2026-09-06-vector-embeddings-rag.json",
