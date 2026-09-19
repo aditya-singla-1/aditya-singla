@@ -1,4 +1,6 @@
 [
+  "2026-09-19-write-ahead-logging-aries-recovery.json",
+  "2026-09-18-direct-preference-optimization-dpo.json",
   "2026-09-17-bloom-filters-distributed-systems.json",
   "2026-09-16-rope-rotary-position-embeddings.json",
   "2026-09-15-distributed-transactions-saga-pattern.json",
