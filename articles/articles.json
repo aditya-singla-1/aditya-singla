@@ -1,4 +1,9 @@
 [
+  "2026-09-24-model-merging-slerp-ties-dare.json",
+  "2026-09-23-change-data-capture-cdc-dual-write.json",
+  "2026-09-22-chunked-prefill-continuous-batching.json",
+  "2026-09-21-gossip-protocol-swim-failure-detection.json",
+  "2026-09-20-grouped-query-attention-gqa.json",
   "2026-09-19-write-ahead-logging-aries-recovery.json",
   "2026-09-18-direct-preference-optimization-dpo.json",
   "2026-09-17-bloom-filters-distributed-systems.json",
