@@ -1327,24 +1327,24 @@ a {
         </a>
       </div>
 
-      <!-- Single Featured Headline Box (Latest: September 24, 2026) -->
+      <!-- Single Featured Headline Box (Latest: September 25, 2026) -->
       <div class="resource-card" style="border-color: rgba(56, 189, 248, 0.3); background: linear-gradient(180deg, rgba(56, 189, 248, 0.03) 0%, var(--bg-surface) 100%);">
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 0.85rem;">
-          <span class="resource-badge">AI Engineering &amp; Model Architecture</span>
-          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);"><i class="fa-regular fa-calendar"></i> September 24, 2026</span>
+          <span class="resource-badge">System Design &amp; Distributed Systems</span>
+          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);"><i class="fa-regular fa-calendar"></i> September 25, 2026</span>
           <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-emerald);"><i class="fa-regular fa-clock"></i> 6 min read</span>
         </div>
 
         <h3 style="font-size: 1.35rem; font-weight: 700; line-height: 1.35; margin-bottom: 0.75rem;">
-          <a href="tech-articles/#model-merging-slerp-ties-dare" style="color: var(--text-primary);">Model Merging: How SLERP, TIES, and DARE Combine Expert LLMs Without Compute or Retraining</a>
+          <a href="tech-articles/#distributed-locks-fencing-tokens" style="color: var(--text-primary);">Distributed Locks and Fencing Tokens: Why Naive Leases Break Under Process Pauses and How to Prevent Split-Brain Writes</a>
         </h3>
 
         <p style="font-size: 0.93rem; color: var(--text-secondary); line-height: 1.65; margin-bottom: 1.25rem;">
-          Model merging allows engineering teams to combine specialized fine-tuned weights directly in parameter space without requiring GPU compute or additional training runs. By leveraging geometric algorithms like SLERP and sparsity methods like TIES and DARE, models synthesize coding, math, and generalist reasoning capabilities in seconds on a standard CPU.
+          Time-based distributed locks like Redis SETNX silently fail when active workers experience garbage collection pauses, OS page swaps, or network hiccups, allowing multiple clients to acquire the same lease concurrently. Fencing tokens solve this vulnerability by assigning a monotonically increasing sequence number to every lock grant, enabling the underlying storage system to safely reject writes from outdated, zombie clients.
         </p>
 
         <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 1rem; flex-wrap: wrap; gap: 10px;">
-          <a href="tech-articles/#model-merging-slerp-ties-dare" class="btn btn-primary" style="padding: 7px 14px; font-size: 0.825rem;">
+          <a href="tech-articles/#distributed-locks-fencing-tokens" class="btn btn-primary" style="padding: 7px 14px; font-size: 0.825rem;">
             Read Full Breakdown <i class="fa-solid fa-arrow-right"></i>
           </a>
           <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);">Opens Tech Articles Archive</span>
