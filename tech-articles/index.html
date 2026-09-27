@@ -641,7 +641,7 @@ a {
           <input type="text" id="article-search" class="search-input" placeholder="Search tech articles, AI topics, keywords..." autocomplete="off">
         </div>
         <div class="filter-chips">
-          <button class="filter-chip active" data-category="all">All Articles (28)</button>
+          <button class="filter-chip active" data-category="all">All Articles (30)</button>
           <button class="filter-chip" data-category="ai">AI & LLM Infra</button>
           <button class="filter-chip" data-category="system-design">System Design</button>
           <button class="filter-chip" data-category="databases">Databases & Data Eng</button>
@@ -654,8 +654,168 @@ a {
   <main class="container">
     <div class="article-list" id="article-container">
 
+
+      <!-- Article: September 27, 2026 -->
+      <article class="article-card featured" id="distributed-unique-id-generation-snowflake-uuidv7" data-category="system-design" data-keywords="distributed unique id snowflake uuidv7 ulid auto increment b-tree page fragmentation k-sortable high throughput horizontal sharding twitter snowflake clock drift monotonic">
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">System Design</span>
+            <span class="article-tag">Distributed Systems</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> September 27, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 6 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('distributed-unique-id-generation-snowflake-uuidv7', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
+        </div>
+
+        <h2 class="article-title">
+          Distributed Unique ID Generation: Why Auto-Increment Breaks at Scale and How Snowflake IDs and UUIDv7 Power High-Throughput Databases
+        </h2>
+
+        <p class="article-summary">
+          Single-node auto-incrementing primary keys (like MySQL AUTO_INCREMENT or PostgreSQL SERIAL) break down in distributed architectures because centralized counters create catastrophic write bottlenecks, introduce single points of failure, and leak sensitive business velocity. While engineering teams frequently substitute random UUIDv4 identifiers, random bit distributions severely degrade database performance by causing rampant B-tree page splits, cache churn, and write amplification. Modern distributed systems overcome this dilemma with timestamp-ordered, k-sortable identifiers like Twitter Snowflake (64-bit) and UUIDv7 (128-bit). By combining high-resolution millisecond timestamps, machine coordinates, and local sequence counters into a bitwise layout, independent nodes generate millions of collision-free, index-friendly primary keys every second without central coordination.
+        </p>
+
+        <div class="article-body">
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: The Global Postal Tracking Barcode vs. The Central City Hall Ledger Book
+            </div>
+            Imagine a global logistics network with 500 sorting warehouses across the world processing millions of packages an hour. Every single package requires an unrepeatable tracking number.<br><br>If your network uses <strong>central auto-increment</strong>, every warehouse worker holding a parcel must stop, dial a single international telephone line to City Hall in London, and wait in queue: 'Hello, what number am I?' 'You are package #4,819,201.' If the London phone line disconnects, the entire global postal system freezes dead in its tracks. And any customer looking at their tracking number can instantly deduce exactly how many packages your company shipped that morning.<br><br>If your network switches to <strong>random UUIDv4</strong>, every worker rolls a 128-sided pair of dice. Every number is globally unique, but the sorting warehouse shelves (the B-tree index pages on disk) are arranged in strict numerical order. Because consecutive numbers are completely random, sorters must run to completely different warehouse bays for every single box, shattering shelf order, tearing open half-full shipping boxes to squeeze new parcels between old ones (B-tree page splits), and exhausting warehouse forklifts (disk I/O).<br><br><strong>Snowflake IDs and UUIDv7</strong> work like smart barcode labelers at each sorting bay. Every label maker generates an ID using three dials: [Current Millisecond Timestamp] + [Depot Machine ID #42] + [Sequential Counter for this Millisecond #003]. Every label generated is globally unique, requires zero phone calls to London, and sorts neatly at the very end of the warehouse shelf in perfect chronological order.
+          </div>
+
+          <h3>1. The Breaking Point of Central Counters and the Chaos of Random UUIDv4</h3>
+          <p>
+            In single-node database setups, monotonic integers generated by <code>AUTO_INCREMENT</code> or sequences work well: they are compact (4 or 8 bytes) and keep clustered B-tree index appends sequential and fast. But the moment an application partitions data across multiple database shards, central counters create severe engineering problems:<br><br>• <strong>Centralized Coordination Bottleneck</strong>: Generating sequential IDs across multiple shards requires either a centralized sequence service (like a dedicated Redis counter or database ticket server) or cross-shard coordination. Network round-trips add milliseconds of latency to every write transaction, and if the ticket server fails, write availability across the entire cluster halts.<br>• <strong>The Hidden Trap of Random UUIDv4</strong>: To bypass coordination, developers often reach for 128-bit random UUIDs (<code>uuid_generate_v4()</code>). While UUIDv4 guarantees uniqueness without central coordination, its random distribution is hostile to storage engines using clustered B-trees (such as MySQL InnoDB or PostgreSQL primary keys).<br>When records with random primary keys are inserted, rows cannot simply be appended to the rightmost leaf page on disk. Instead, new rows must be inserted into arbitrary middle pages throughout the tree. Once a page fills up, the engine must perform an expensive <strong>B-tree page split</strong>—allocating a new disk page, copying half the existing rows, and updating interior tree nodes. This causes massive write amplification, fragments on-disk storage, and constantly evicts hot pages from the database buffer pool cache.
+          </p>
+
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 680 185" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="660" height="165" rx="10" fill="#0f1118" stroke="rgba(255,255,255,0.1)" stroke-dasharray="3,3" /><rect x="25" y="22" width="190" height="140" rx="8" fill="#151822" stroke="#ef4444" stroke-width="1.2" /><text x="120" y="42" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">1. NAIVE AUTO-INC / UUIDv4</text><rect x="37" y="54" width="166" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="120" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Central DB / Redis Ticket</text><text x="120" y="81" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="bold" text-anchor="middle">Bottleneck &bull; Single Point of Failure</text><rect x="37" y="94" width="166" height="36" rx="4" fill="rgba(239,68,68,0.12)" stroke="#ef4444" /><text x="120" y="108" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">UUIDv4: Random Inserts</text><text x="120" y="122" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">50% B-Tree Page Splits &bull; High I/O</text><text x="120" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Sharded Scale Failure</text><line x1="215" y1="92" x2="235" y2="92" stroke="#f59e0b" stroke-width="2" /><polygon points="235,92 228,88 228,96" fill="#f59e0b" /><rect x="235" y="22" width="210" height="140" rx="8" fill="#151822" stroke="#f59e0b" stroke-width="1.2" /><text x="340" y="42" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">2. BITWISE LAYOUT (64-BIT)</text><rect x="247" y="54" width="186" height="34" rx="4" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" /><text x="340" y="68" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">41 bits: Epoch Timestamp (ms)</text><text x="340" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Natural Chronological Ordering</text><rect x="247" y="94" width="186" height="36" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="340" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">10b Node ID &bull; 12b Sequence Counter</text><text x="340" y="122" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">4,096 IDs / ms / node &bull; 0 Network I/O</text><text x="340" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Decentralized Generation &#x2714;</text><line x1="445" y1="92" x2="465" y2="92" stroke="#34d399" stroke-width="2" /><polygon points="465,92 458,88 458,96" fill="#34d399" /><rect x="465" y="22" width="190" height="140" rx="8" fill="#151822" stroke="#34d399" stroke-width="1.2" /><text x="560" y="42" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">3. K-SORTABLE B-TREE WRITES</text><rect x="477" y="54" width="166" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="560" y="68" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Appends to Rightmost Page</text><text x="560" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Zero Mid-Page Fragmentation</text><rect x="477" y="94" width="166" height="36" rx="4" fill="rgba(52,211,153,0.12)" stroke="#34d399" /><text x="560" y="108" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Buffer Cache Kept Warm</text><text x="560" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">UUIDv7 / Snowflake: Sub-ms Indexing</text><text x="560" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Optimal Clustered Storage &#x2714;</text></svg>
+          </div>
+
+          <h3>2. Twitter Snowflake: Packing Time, Topology, and Concurrency into 64 Bits</h3>
+          <p>
+            To solve high-throughput ID generation without coordination or disk fragmentation, engineers developed <strong>Twitter Snowflake</strong>—a decentralized algorithm that generates 64-bit integer IDs ordered roughly by time (<em>k-sortable</em>).<br><br>A Snowflake ID compresses time, cluster topology, and concurrency into a 64-bit binary representation:<br><br><pre><code>+--------------------------------------------------------------------------+
+| 1 bit  | 41 bits: Timestamp (ms) | 10 bits: Node ID | 12 bits: Sequence |
+| Sign=0 | ~69 years lifespan      | 1,024 workers    | 4,096 IDs/ms/node |
++--------------------------------------------------------------------------+</code></pre><br>• <strong>1 Unused Sign Bit</strong>: Always set to 0 to ensure the resulting integer is positive across all programming languages and storage engines.<br>• <strong>41 Bits Millisecond Timestamp</strong>: Stores the number of milliseconds elapsed since a custom system epoch (e.g., November 1, 2020). $2^{41}$ milliseconds provides approximately 69.7 years of operational lifespan.<br>• <strong>10 Bits Machine / Node Identifier</strong>: Accommodates up to $2^{10} = 1,024$ distinct worker nodes or container instances across multiple datacenters.<br>• <strong>12 Bits Sequence Number</strong>: A local counter that increments for every ID generated within the same millisecond on the same worker node ($2^{12} = 4,096$ IDs per millisecond per node). If a worker receives more than 4,096 requests in a single millisecond, it pauses execution until the clock ticks to the next millisecond.<br><br>Because the most significant bits represent the millisecond timestamp, newly generated Snowflake IDs are naturally ordered by time. When inserted into a database clustered index, new records append cleanly to the rightmost leaf pages, preserving B-tree packing efficiency and delivering up to 4 million IDs per second per node.
+          </p>
+
+          <h3>3. UUIDv7 and Clock Drift: The New Standard for Universal Interoperability</h3>
+          <p>
+            While 64-bit Snowflake IDs fit neatly into standard <code>BIGINT</code> database columns, they require operating a dedicated node-ID assignment registry (such as ZooKeeper, etcd, or Kubernetes pod index mappings) to prevent worker ID collisions. For modern distributed applications seeking a standardized format without worker registries, the IETF formalized <strong>UUIDv7 (RFC 9562)</strong>.<br><br>UUIDv7 is a 128-bit identifier that combines time-ordering with entropy:<br>• <strong>48 bits</strong>: Unix timestamp in milliseconds.<br>• <strong>4 bits</strong>: UUID version indicator (<code>0111</code> for version 7).<br>• <strong>12 bits</strong>: Sub-millisecond sequence counter or high-resolution fraction.<br>• <strong>2 bits</strong>: UUID variant indicator (<code>10</code>).<br>• <strong>62 bits</strong>: Cryptographically secure random entropy.<br><br>UUIDv7 provides the best of both worlds: it delivers the universal compatibility and zero-configuration convenience of standard UUIDs while maintaining sequential, B-tree friendly write characteristics.<br><br><strong>Handling Clock Drift and Monotonicity</strong>:<br>Any timestamp-based ID generator must confront physical clock anomalies, such as NTP clock slews or daylight saving adjustments. If a server's clock steps backward, a naive generator could issue duplicate IDs.<br>Production systems address this through strict defensive mechanisms: if the current millisecond is less than the last recorded timestamp (<code>current_ms &lt; last_ms</code>), the generator refuses to issue IDs until the clock catches up, or falls back to incrementing a monotonic sequence offset. By anchoring ID generation to physical time and monotonic bounds, modern databases achieve horizontal scalability with zero split-brain collisions.
+          </p>
+
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            Centralized auto-increment counters create brittle scalability bottlenecks in horizontally sharded databases, while random UUIDv4 keys trigger catastrophic B-tree page splits and cache churn. Modern distributed data architectures overcome both limitations with k-sortable, timestamp-prefixed identifiers like 64-bit Snowflake IDs and 128-bit UUIDv7. By packing high-resolution timestamps, machine coordinates, and per-millisecond sequence counters into a compact bitwise structure, independent cluster nodes generate millions of chronologically ordered, collision-free primary keys each second without central coordination.
+          </div>
+        </div>
+
+        <div class="ai-explainer-box">
+          <div class="ai-explainer-info">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
+          </div>
+          <div class="ai-btn-group">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'distributed-unique-id-generation-snowflake-uuidv7')">
+              <i class="fa-solid fa-robot"></i> ChatGPT
+            </button>
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'distributed-unique-id-generation-snowflake-uuidv7')">
+              <i class="fa-solid fa-brain"></i> Claude
+            </button>
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'distributed-unique-id-generation-snowflake-uuidv7')">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
+            </button>
+          </div>
+        </div>
+
+        <div class="article-footer">
+          <span>Curated Tech Notes</span>
+          <span>Category: System Design &amp; Distributed Systems</span>
+        </div>
+      </article>
+
+      <!-- Article: September 26, 2026 -->
+      <article class="article-card" id="prefix-caching-radix-attention" data-category="ai" data-keywords="prefix caching radix attention sglang vllm kv cache reuse multi-turn chat agentic loops time to first token ttft prompt prefill lru eviction trie radix tree">
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">AI Engineering</span>
+            <span class="article-tag">LLM Inference</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> September 26, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 6 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('prefix-caching-radix-attention', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
+        </div>
+
+        <h2 class="article-title">
+          Prefix Caching and RadixAttention: How Modern LLM Engines Reuse KV Caches Across Multi-Turn Chats and Agent Workflows
+        </h2>
+
+        <p class="article-summary">
+          In conversational AI, retrieval-augmented generation (RAG), and agentic loops, large language models repeatedly process overlapping prompt prefixes—such as system instructions, retrieved documents, or multi-turn chat histories. In standard serving architectures, the engine recomputes Key-Value (KV) tensors for the entire context on every single turn, bottlenecking GPU compute during the prefill phase and causing painful Time-To-First-Token (TTFT) delays. RadixAttention and automatic prefix caching solve this by organizing GPU KV memory as a dynamic Radix Tree (compact trie), matching token prefixes in constant time, reusing cached KV tensors directly in High Bandwidth Memory, and evicting cold branches via Least Recently Used (LRU) policies. This slashes multi-turn prefill times by up to 90% and triples serving throughput without modifying model weights.
+        </p>
+
+        <div class="article-body">
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: The Master Chef's Mise en Place Tree vs. Re-Chopping Soup Bases From Scratch
+            </div>
+            Imagine running a high-volume restaurant specializing in artisan ramen and noodle soups. Every bowl ordered starts with the exact same 4-hour simmering bone broth and base mirepoix (onions, carrots, celery).<br><br>If your kitchen operated like a <strong>traditional naive LLM engine</strong>, whenever a customer ordered 'Spicy Miso Ramen with extra pork', the line cook would pull out raw whole carrots, whole onions, and raw bones, spend 45 minutes dicing and boiling the broth from absolute zero, just to add the final scoop of miso paste and sliced pork at the very end. When the customer asks for a side dish or refills ten minutes later (Turn 2), the chef tosses everything in the garbage and chops all the raw vegetables all over again from scratch!<br><br><strong>RadixAttention</strong> operates like a master kitchen with an organized <em>mise en place</em> holding station. In the center of the kitchen sits a heated tree of pre-prepped bases: Trunk A is the master golden broth. Branch B splits into chicken stock; Branch C splits into vegan dashi. When an order arrives, the chef looks at the ticket, matches the longest common prefix on the prep counter ('Ah, golden broth + miso base already hot on burner #3!'), scoops out the pre-heated base in two seconds flat, and only cooks the unique requested toppings (the new turn's prompt tokens). When the kitchen runs low on counter space (GPU VRAM), the kitchen porter clears away the Least Recently Used (LRU) specialty sauces that haven't been ordered all evening, keeping popular common bases instantly available.
+          </div>
+
+          <h3>1. The Multi-Turn Bottleneck: Why Recomputing Common Prefixes Stalls GPU Prefill</h3>
+          <p>
+            In production LLM applications, modern workflows are dominated by repeated context. Consider three ubiquitous patterns:<br>• <strong>Multi-turn Conversations</strong>: In a 10-turn conversation, Turn 10 contains all prompt and response tokens from Turns 1 through 9. Without caching, the engine reprocesses all historical tokens again from scratch.<br>• <strong>Few-Shot Prompting and RAG</strong>: Applications prepend a large 2,000-word system prompt or a 5,000-token enterprise knowledge base to hundreds of concurrent user questions.<br>• <strong>Agentic Reasoning Loops</strong>: Frameworks like DSPy, AutoGen, and tool-calling agents generate multiple reasoning branches and self-correction iterations off a single shared task description.<br><br>During the initial <strong>prefill phase</strong> of LLM execution, the GPU runs parallel matrix multiplications across all input prompt tokens to compute the Query ($Q$), Key ($K$), and Value ($V$) activations. While computing attention across $N$ tokens has an arithmetic cost of $O(N^2)$, repeating this computation when 90% of the tokens have already been evaluated in the previous turn wastes vast amounts of GPU Tensor Core compute and memory bandwidth.<br><br>Naive caching systems attempt to match prompt strings using hash tables. However, exact string hashes break down instantly when system prompts are shared across different users, or when conversations fork into different branches. What LLM engines need is a structure capable of matching arbitrary common prefixes across disparate requests at the granular token level.
+          </p>
+
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 680 185" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="660" height="165" rx="10" fill="#0f1118" stroke="rgba(255,255,255,0.1)" stroke-dasharray="3,3" /><rect x="25" y="22" width="190" height="140" rx="8" fill="#151822" stroke="#ef4444" stroke-width="1.2" /><text x="120" y="42" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">1. NAIVE MULTI-TURN</text><rect x="37" y="54" width="166" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="120" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Turn 1: System + Turn 1 Q/A</text><text x="120" y="81" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Prefill = 1,000 tokens &bull; Done</text><rect x="37" y="94" width="166" height="36" rx="4" fill="rgba(239,68,68,0.12)" stroke="#ef4444" /><text x="120" y="108" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Turn 2: Recompute 1,200 tkns</text><text x="120" y="122" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Recomputes All Past KV &bull; TTFT 2s</text><text x="120" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Massive Redundant GPU Prefill</text><line x1="215" y1="92" x2="235" y2="92" stroke="#f59e0b" stroke-width="2" /><polygon points="235,92 228,88 228,96" fill="#f59e0b" /><rect x="235" y="22" width="210" height="140" rx="8" fill="#151822" stroke="#f59e0b" stroke-width="1.2" /><text x="340" y="42" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">2. RADIX TREE MAPPING</text><rect x="247" y="54" width="186" height="34" rx="4" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" /><text x="340" y="68" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Root: [System Prompt 800t]</text><text x="340" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Ref Count = 4 &bull; Locked in HBM</text><rect x="247" y="94" width="186" height="36" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="340" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">&ang; Branch A: User 1 | Branch B: User 2</text><text x="340" y="122" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">PagedAttention KV Page Pointer Reuse</text><text x="340" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Constant-Time Prefix Traversal</text><line x1="445" y1="92" x2="465" y2="92" stroke="#34d399" stroke-width="2" /><polygon points="465,92 458,88 458,96" fill="#34d399" /><rect x="465" y="22" width="190" height="140" rx="8" fill="#151822" stroke="#34d399" stroke-width="1.2" /><text x="560" y="42" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">3. INSTANT SUFFIX PREFILL</text><rect x="477" y="54" width="166" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="560" y="68" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Matched: 1,000 tkns &bull; Cached</text><text x="560" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Zero Matrix Multiplication</text><rect x="477" y="94" width="166" height="36" rx="4" fill="rgba(52,211,153,0.12)" stroke="#34d399" /><text x="560" y="108" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">New Suffix: 200 tkns prefilled</text><text x="560" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">TTFT Drops 2s &rarr; 40ms (&minus;95%)</text><text x="560" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">High Serving Throughput &#x2714;</text></svg>
+          </div>
+
+          <h3>2. Radix Trees in GPU Memory: How RadixAttention Tracks and Shares Tensors</h3>
+          <p>
+            To solve prefix matching without rigid hash tables, modern inference frameworks such as <strong>SGLang</strong> introduced <strong>RadixAttention</strong>, an architecture now adopted in systems like <strong>vLLM (Automatic Prefix Caching)</strong>.<br><br>Instead of tying KV cache allocations to isolated request lifecycles, the engine maintains a global <strong>Radix Tree (compact trie)</strong> over all token sequences resident in GPU High Bandwidth Memory (HBM):<br>1. <strong>Nodes and Edges</strong>: Each edge in the Radix Tree represents a sequence of token IDs. Each node holds pointers to physical GPU memory pages (managed via PagedAttention) that store the exact Key and Value projection matrices for those tokens.<br>2. <strong>Constant-Time Prefix Traversal</strong>: When a new prompt arrives, the engine tokenizes the string and walks down the Radix Tree from the root, matching token IDs sequentially. The traversal stops at the deepest node that matches the prompt's prefix.<br>3. <strong>Instant Cache Hit</strong>: If the first 3,500 tokens of a 4,000-token prompt match an existing branch in the tree, the engine instantly maps those 3,500 token KV cache pages into the new request's logical page table. The GPU Tensor Cores completely skip prefill calculations for those 3,500 tokens, computing activations only for the remaining 500 suffix tokens.<br><br>This changes the initial Time-To-First-Token (TTFT) from 1,800 milliseconds down to under 50 milliseconds, as the engine transforms a heavy matrix multiplication problem into a lightweight pointer lookup.
+          </p>
+
+          <h3>3. Cache Eviction, Forking, and Cache-Aware Request Scheduling</h3>
+          <p>
+            Maintaining KV caches in GPU memory introduces a critical resource challenge: GPU VRAM is strictly finite. When memory is full, how does the engine make room for incoming requests without thrashing?<br><br>• <strong>Reference Counting &amp; LRU Eviction</strong>: Every node in the Radix Tree maintains a reference counter indicating how many currently executing inference requests depend on its KV blocks. When a request finishes generating tokens, the reference counters along its path decrement to zero. However, instead of immediately freeing the memory pages, the engine retains the tree nodes and marks them as unreferenced. If free memory runs low, a Least Recently Used (LRU) eviction policy purges the oldest unreferenced leaf nodes first, freeing physical pages while preserving hot shared roots (such as the base system prompt).<br>• <strong>Branch Forking for Speculative Agents</strong>: When an agent evaluates multiple potential solutions in parallel (e.g., Tree-of-Thought search or majority voting), each branch forks off the common parent node in the Radix Tree. All worker threads share the exact same physical KV cache pages for the parent prompt, consuming zero duplicate VRAM.<br>• <strong>Cache-Aware Request Routing</strong>: In multi-GPU clusters, intelligent load balancers route incoming user requests to the specific worker node that already holds the matching prefix in its local VRAM. This maximizes cluster-wide cache hit rates and eliminates redundant cold-start prefills across worker pools.
+          </p>
+
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            Recomputing Key-Value projections for identical system prompts, document contexts, and chat histories wastes massive GPU compute and causes high first-token latency in multi-turn applications. RadixAttention and automatic prefix caching solve this by treating GPU KV memory as a dynamic Radix Tree, matching token prefixes in constant time and skipping redundant matrix multiplications. By combining instant prefix lookup with LRU eviction and cache-aware request scheduling, modern LLM serving engines slash Time-To-First-Token by up to 90% and massively expand concurrent serving capacity.
+          </div>
+        </div>
+
+        <div class="ai-explainer-box">
+          <div class="ai-explainer-info">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
+          </div>
+          <div class="ai-btn-group">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'prefix-caching-radix-attention')">
+              <i class="fa-solid fa-robot"></i> ChatGPT
+            </button>
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'prefix-caching-radix-attention')">
+              <i class="fa-solid fa-brain"></i> Claude
+            </button>
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'prefix-caching-radix-attention')">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
+            </button>
+          </div>
+        </div>
+
+        <div class="article-footer">
+          <span>Curated Tech Notes</span>
+          <span>Category: AI Engineering &amp; LLM Serving</span>
+        </div>
+      </article>
+
       <!-- Article: September 25, 2026 -->
-      <article class="article-card featured" id="distributed-locks-fencing-tokens" data-category="system-design" data-keywords="distributed locks fencing tokens redis redlock etcd zookeeper mutual exclusion split brain gc pause process pause lease expiration monotonic counter martin kleppmann consensus">
+      <article class="article-card" id="distributed-locks-fencing-tokens" data-category="system-design" data-keywords="distributed locks fencing tokens redis redlock etcd zookeeper mutual exclusion split brain gc pause process pause lease expiration monotonic counter martin kleppmann consensus">
         <div class="article-header-top">
           <div class="article-meta">
             <span class="article-tag">System Design</span>
