@@ -1327,24 +1327,24 @@ a {
         </a>
       </div>
 
-      <!-- Single Featured Headline Box (Latest: September 27, 2026) -->
+      <!-- Single Featured Headline Box (Latest: September 28, 2026) -->
       <div class="resource-card" style="border-color: rgba(56, 189, 248, 0.3); background: linear-gradient(180deg, rgba(56, 189, 248, 0.03) 0%, var(--bg-surface) 100%);">
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 0.85rem;">
-          <span class="resource-badge">System Design &amp; Distributed Systems</span>
-          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);"><i class="fa-regular fa-calendar"></i> September 27, 2026</span>
+          <span class="resource-badge">AI Engineering &amp; Distributed Systems</span>
+          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);"><i class="fa-regular fa-calendar"></i> September 28, 2026</span>
           <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-emerald);"><i class="fa-regular fa-clock"></i> 6 min read</span>
         </div>
 
         <h3 style="font-size: 1.35rem; font-weight: 700; line-height: 1.35; margin-bottom: 0.75rem;">
-          <a href="tech-articles/#distributed-unique-id-generation-snowflake-uuidv7" style="color: var(--text-primary);">Distributed Unique ID Generation: Why Auto-Increment Breaks at Scale and How Snowflake IDs and UUIDv7 Power High-Throughput Databases</a>
+          <a href="tech-articles/#tensor-parallelism-megatron-lm" style="color: var(--text-primary);">Tensor Parallelism in Megatron-LM: How Column and Row Parallelism Shard Massive Models Across GPUs with Minimal All-Reduce Overhead</a>
         </h3>
 
         <p style="font-size: 0.93rem; color: var(--text-secondary); line-height: 1.65; margin-bottom: 1.25rem;">
-          Single-node auto-incrementing primary keys break down in distributed architectures because centralized counters create catastrophic write bottlenecks and leak business velocity. Modern distributed systems overcome this dilemma with timestamp-ordered, k-sortable identifiers like Twitter Snowflake (64-bit) and UUIDv7 (128-bit) that prevent B-tree page splits and generate millions of collision-free keys per second without central coordination.
+          When model parameters exceed the high-bandwidth memory of a single GPU, Megatron-LM shards individual weight matrices within each transformer block across NVLink-connected GPUs. By pairing Column-Parallel projections with Row-Parallel projections, multi-head attention and non-linear activations compute independently on each device with only two All-Reduce synchronizations per layer.
         </p>
 
         <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 1rem; flex-wrap: wrap; gap: 10px;">
-          <a href="tech-articles/#distributed-unique-id-generation-snowflake-uuidv7" class="btn btn-primary" style="padding: 7px 14px; font-size: 0.825rem;">
+          <a href="tech-articles/#tensor-parallelism-megatron-lm" class="btn btn-primary" style="padding: 7px 14px; font-size: 0.825rem;">
             Read Full Breakdown <i class="fa-solid fa-arrow-right"></i>
           </a>
           <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);">Opens Tech Articles Archive</span>
