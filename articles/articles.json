@@ -1,4 +1,5 @@
 [
+  "2026-10-02-zero-fsdp-sharded-data-parallelism.json",
   "2026-10-01-distributed-tracing-opentelemetry.json",
   "2026-09-30-pipeline-parallelism-1f1b-schedule.json",
   "2026-09-29-circuit-breaker-bulkhead-resilience.json",
