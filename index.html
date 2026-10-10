@@ -1327,24 +1327,24 @@ a {
         </a>
       </div>
 
-      <!-- Single Featured Headline Box (Latest: October 6, 2026) -->
+      <!-- Single Featured Headline Box (Latest: October 10, 2026) -->
       <div class="resource-card" style="border-color: rgba(56, 189, 248, 0.3); background: linear-gradient(180deg, rgba(56, 189, 248, 0.03) 0%, var(--bg-surface) 100%);">
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 0.85rem;">
-          <span class="resource-badge">AI &amp; LLM Architecture</span>
-          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);"><i class="fa-regular fa-calendar"></i> October 6, 2026</span>
+          <span class="resource-badge">AI &amp; Reasoning Models</span>
+          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);"><i class="fa-regular fa-calendar"></i> October 10, 2026</span>
           <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-emerald);"><i class="fa-regular fa-clock"></i> 8 min read</span>
         </div>
 
         <h3 style="font-size: 1.35rem; font-weight: 700; line-height: 1.35; margin-bottom: 0.75rem;">
-          <a href="tech-articles/#multi-head-latent-attention-mla" style="color: var(--text-primary);">Multi-Head Latent Attention (MLA): How Low-Rank KV Compression &amp; Decoupled RoPE Break the Memory Bottleneck</a>
+          <a href="tech-articles/#group-relative-policy-optimization-grpo" style="color: var(--text-primary);">Group Relative Policy Optimization (GRPO): How Critic-Free Reinforcement Learning Scales LLM Reasoning Without a Value Network</a>
         </h3>
 
         <p style="font-size: 0.93rem; color: var(--text-secondary); line-height: 1.65; margin-bottom: 1.25rem;">
-          LLM decoding throughput is throttled by the immense memory bandwidth required to stream Key-Value caches from GPU memory. Multi-Head Latent Attention (MLA) overcomes this by compressing keys and values into a low-rank latent vector, decoupling RoPE, and absorbing uncompression matrices directly into query weights to slash KV cache memory by 90% without losing attention expressiveness.
+          Standard Proximal Policy Optimization (PPO) places severe strain on GPU clusters during reinforcement learning because it requires maintaining a massive Critic model of comparable size to the Actor just to estimate baseline token values. Group Relative Policy Optimization (GRPO) removes the Critic network entirely by sampling a group of candidate outputs for each prompt, evaluating them with verifiable rule-based reward functions, and normalizing advantages directly across the group to achieve stable, memory-efficient reinforcement learning.
         </p>
 
         <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 1rem; flex-wrap: wrap; gap: 10px;">
-          <a href="tech-articles/#multi-head-latent-attention-mla" class="btn btn-primary" style="padding: 7px 14px; font-size: 0.825rem;">
+          <a href="tech-articles/#group-relative-policy-optimization-grpo" class="btn btn-primary" style="padding: 7px 14px; font-size: 0.825rem;">
             Read Full Breakdown <i class="fa-solid fa-arrow-right"></i>
           </a>
           <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);">Opens Tech Articles Archive</span>

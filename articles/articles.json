@@ -1,4 +1,8 @@
 [
+  "2026-10-10-group-relative-policy-optimization-grpo.json",
+  "2026-10-09-backpressure-reactive-streams-flow-control.json",
+  "2026-10-08-activation-checkpointing-gradient-checkpointing.json",
+  "2026-10-07-conflict-free-replicated-data-types-crdts.json",
   "2026-10-06-multi-head-latent-attention-mla.json",
   "2026-10-05-l4-vs-l7-load-balancing-maglev.json",
   "2026-10-04-ring-attention-sequence-parallelism.json",
