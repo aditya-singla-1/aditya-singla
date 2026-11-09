@@ -1,4 +1,8 @@
 [
+  "2026-11-09-tcp-time-wait-ephemeral-port-exhaustion.json",
+  "2026-11-08-vision-language-models-patch-projection-llava.json",
+  "2026-11-07-dead-letter-queues-poison-pill-retry-jitter.json",
+  "2026-11-06-mixture-of-depths-dynamic-compute-transformers.json",
   "2026-11-05-lmax-disruptor-lock-free-ring-buffer.json",
   "2026-11-04-medusa-eagle-tree-speculative-decoding.json",
   "2026-11-03-read-after-write-consistency-replicas.json",

@@ -641,7 +641,7 @@ a {
           <input type="text" id="article-search" class="search-input" placeholder="Search tech articles, AI topics, keywords..." autocomplete="off">
         </div>
         <div class="filter-chips">
-          <button class="filter-chip active" data-category="all">All Articles (69)</button>
+          <button class="filter-chip active" data-category="all">All Articles (73)</button>
           <button class="filter-chip" data-category="ai">AI & LLM Infra</button>
           <button class="filter-chip" data-category="system-design">System Design</button>
           <button class="filter-chip" data-category="databases">Databases & Data Eng</button>
@@ -654,8 +654,321 @@ a {
   <main class="container">
     <div class="article-list" id="article-container">
 
+      <!-- Article: November 9, 2026 -->
+      <article class="article-card featured" id="tcp-time-wait-ephemeral-port-exhaustion" data-category="backend" data-keywords="tcp time wait ephemeral port exhaustion connection pooling http keep alive 4 tuple socket starvation linux kernel sysctl tw_reuse">
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">Networking</span>
+            <span class="article-tag">TCP/IP</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> November 9, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 8 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('tcp-time-wait-ephemeral-port-exhaustion', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
+        </div>
+
+        <h2 class="article-title">
+          TCP TIME_WAIT Sockets and Ephemeral Port Exhaustion: Why Microservices Collapse Under High Outbound Load and How Connection Pooling Fixes It
+        </h2>
+
+        <p class="article-summary">
+          High-throughput microservice architectures frequently suffer mysterious, sudden outages under bursty traffic: outbound HTTP and gRPC calls abruptly fail with 'Cannot assign requested address' errors, despite CPU and memory utilization hovering below 30%. This failure mode stems from the physics of the TCP state machine. When a client closes a short-lived TCP connection, the socket lingers in the TIME_WAIT state for two Maximum Segment Lifetimes (2MSL, typically 60 seconds) to prevent lingering packets from corrupting future connections. At thousands of requests per second, available ephemeral client ports are rapidly exhausted. Understanding the TCP 4-tuple, enabling HTTP Keep-Alive, using bounded client connection pools, and tuning kernel socket parameters is essential to prevent microservices from choking on their own network sockets.
+        </p>
+
+        <div class="article-body">
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: The Single-Use Phone Booth vs. The Dedicated Conference Trunk Line
+            </div>
+            Imagine a corporate operations floor where 500 account managers must place short 10-second verification calls to a partner clearing bank.<br><br>Under <strong>Naive Short-Lived Connections (The Single-Use Phone Booth)</strong>, an employee steps into a telephone booth, punches in a number, speaks for 10 seconds, and hangs up. By municipal telephone regulations, that phone booth must be locked down and fumigated for 60 seconds (the <code>TIME_WAIT</code> quarantine) before anyone else can touch the receiver to ensure no wires are crossed. If employees make 50 calls a second, all 3,000 phone booths in the building are quarantined within one minute. New calls are rejected at the entrance, even though all 500 employees are sitting idle.<br><br>Under <strong>HTTP Keep-Alive and Connection Pooling (The Dedicated Conference Trunk Line)</strong>, the company establishes 100 persistent telephone lines once in the morning and leaves them open. Employees take turns speaking over existing, open lines without hanging up and re-dialing. Zero booths are quarantined, connection handshakes drop to zero, and the business handles massive call volumes with effortless speed.
+          </div>
+
+          <h3>1. Why TIME_WAIT Exists: The Two Maximum Segment Lifetimes (2MSL) Rule</h3>
+          <p>
+            When a network service initiates the closing handshake of a TCP session by sending an active <code>FIN</code> packet, its socket transitions through <code>FIN_WAIT_1</code> and <code>FIN_WAIT_2</code> before entering the <code>TIME_WAIT</code> state upon receiving the remote peer's <code>FIN-ACK</code>.<br><br>&bull; <strong>The 2MSL Guarantee</strong>: By RFC 793 specification, the active closer must remain in <code>TIME_WAIT</code> for twice the Maximum Segment Lifetime (typically $2 \times 30\text{s} = 60\text{s}$). This guarantees that if the client's final <code>ACK</code> is lost in transit, the remote server can re-transmit its <code>FIN</code> without receiving an unexpected <code>RST</code>.<br>&bull; <strong>Preventing Ghost Packet Infiltration</strong>: Internet routers occasionally delay IP packets across multiple hops. The 60-second quarantine ensures that any wandering packets from the old connection dissipate in the network before the exact same socket identity is assigned to a brand new TCP stream.
+          </p>
+
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 700 170" width="100%" height="170" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="20" width="205" height="140" rx="8" fill="#151822" stroke="#38bdf8" stroke-width="1.2" /><text x="122" y="42" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">1. SHORT-LIVED TCP CALLS</text><rect x="32" y="54" width="181" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="122" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Client Opens &amp; Closes per Req</text><text x="122" y="81" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Active Closer Sends Final FIN</text><rect x="32" y="94" width="181" height="36" rx="4" fill="rgba(239,68,68,0.12)" stroke="#ef4444" /><text x="122" y="108" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">2MSL TIME_WAIT: 60 Seconds</text><text x="122" y="122" fill="#f87171" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Socket Quarantined in Memory</text><text x="122" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Heavy Handshake Overhead</text><line x1="225" y1="90" x2="245" y2="90" stroke="#ef4444" stroke-width="2" /><polygon points="245,90 238,86 238,94" fill="#ef4444" /><rect x="245" y="20" width="210" height="140" rx="8" fill="#151822" stroke="#ef4444" stroke-width="1.2" /><text x="350" y="42" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">2. PORT EXHAUSTION CRASH</text><rect x="257" y="54" width="186" height="34" rx="4" fill="rgba(239,68,68,0.12)" stroke="#ef4444" /><text x="350" y="68" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">500 req/s x 60s = 30k Sockets</text><text x="350" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Exceeds 28k Ephemeral Range</text><rect x="257" y="94" width="186" height="36" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="350" y="108" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">EADDRNOTAVAIL Error &#x2717;</text><text x="350" y="122" fill="#f87171" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Cannot assign requested address</text><text x="350" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">CPU &lt; 30% yet System Collapses</text><line x1="455" y1="90" x2="475" y2="90" stroke="#34d399" stroke-width="2" /><polygon points="475,90 468,86 468,94" fill="#34d399" /><rect x="475" y="20" width="205" height="140" rx="8" fill="#151822" stroke="#34d399" stroke-width="1.2" /><text x="577" y="42" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">3. CONNECTION POOLING</text><rect x="487" y="54" width="181" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="577" y="68" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Persistent HTTP Keep-Alive</text><text x="577" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Reusable Warm Socket Pool</text><rect x="487" y="94" width="181" height="36" rx="4" fill="rgba(52,211,153,0.12)" stroke="#34d399" /><text x="577" y="108" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">tcp_tw_reuse = 1 Enabled &#x2714;</text><text x="577" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Zero Ephemeral Port Burn &#x2714;</text><text x="577" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Sub-Millisecond Wire Latency</text></svg>
+          </div>
+
+          <h3>2. The Math of Ephemeral Port Exhaustion: When the 4-Tuple Freezes</h3>
+          <p>
+            Every TCP connection is uniquely identified by an OS-level 4-tuple: <code>(source_ip, source_port, destination_ip, destination_port)</code>.<br><br>&bull; <strong>The Fixed 3-Tuple Bottleneck</strong>: When Microservice A connects to a specific downstream Microservice B (e.g., a payment gateway or Redis cluster at <code>10.0.1.50:8080</code>), three of the four parameters are completely fixed. The only variable parameter the client OS kernel can allocate is the <code>source_port</code> (the ephemeral port).<br>&bull; <strong>The Ephemeral Port Ceiling</strong>: On default Linux distributions, ephemeral ports are allocated from <code>net.ipv4.ip_local_port_range = 32768 60999</code>, providing exactly 28,232 usable source ports. If a service makes 500 short-lived HTTP requests per second without connection reuse, $500 \times 60\text{s} = 30,000$ sockets enter <code>TIME_WAIT</code>. The kernel completely runs out of source ports, throwing <code>EADDRNOTAVAIL</code> (<em>Cannot assign requested address</em>), causing cascading request timeouts across the entire platform.
+          </p>
+
+          <h3>3. Production Remedies: Connection Pooling, HTTP Keep-Alive, and Kernel Tuning</h3>
+          <p>
+            Eliminating port starvation requires architectural discipline in application runtimes and operating system network parameters:<br><br>&bull; <strong>HTTP Keep-Alive and Persistent Connection Pooling</strong>: The primary fix is architectural. HTTP clients (such as Go's <code>http.Transport</code>, Python's <code>urllib3 / httpx</code>, or Java's <code>HttpClient</code>) must reuse established TCP connections across requests via <code>Connection: keep-alive</code>. Maintaining a warm pool of 100–500 persistent connections eliminates continuous 3-way handshakes and prevents sockets from ever entering <code>TIME_WAIT</code>.<br>&bull; <strong>Kernel Socket Recycling (<code>tcp_tw_reuse</code>)</strong>: In Linux kernel configs, setting <code>sysctl -w net.ipv4.tcp_tw_reuse=1</code> allows the kernel to safely reallocate an outbound <code>TIME_WAIT</code> socket for a new connection if the socket timestamp (RFC 1323) confirms the incoming segment is strictly newer than the previous connection.<br>&bull; <strong>Expanding Ephemeral Ranges</strong>: For high-concurrency gateway proxies, expanding the local port range via <code>sysctl -w net.ipv4.ip_local_port_range="10240 65535"</code> instantly increases the available socket pool from 28,000 to over 55,000 ports.
+          </p>
+
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            Microservices that close outbound TCP connections after every HTTP request burn through ephemeral ports rapidly, causing sudden socket exhaustion while server resources sit idle. Enabling HTTP Keep-Alive with persistent client connection pooling eliminates connection teardowns, while tcp_tw_reuse allows the kernel to safely recycle sockets without risking network packet corruption.
+          </div>
+        </div>
+
+        <div class="ai-explainer-box">
+          <div class="ai-explainer-info">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
+          </div>
+          <div class="ai-btn-group">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'tcp-time-wait-ephemeral-port-exhaustion')">
+              <i class="fa-solid fa-robot"></i> ChatGPT
+            </button>
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'tcp-time-wait-ephemeral-port-exhaustion')">
+              <i class="fa-solid fa-brain"></i> Claude
+            </button>
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'tcp-time-wait-ephemeral-port-exhaustion')">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
+            </button>
+          </div>
+        </div>
+
+        <div class="article-footer">
+          <span>Curated Tech Notes</span>
+          <span>Category: Networking Internals & High-Throughput Backends</span>
+        </div>
+      </article>
+
+      <!-- Article: November 8, 2026 -->
+      <article class="article-card" id="vision-language-models-patch-projection-llava" data-category="ai" data-keywords="vision language models vlm clip siglip vision transformer vit patch projection linear projection mlp cross attention llava multimodal tokenization">
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">Vision-Language Models</span>
+            <span class="article-tag">Multimodal AI</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> November 8, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 8 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('vision-language-models-patch-projection-llava', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
+        </div>
+
+        <h2 class="article-title">
+          Vision-Language Models (VLMs) Under the Hood: How Patch Projection and Multimodal Projectors Bridge Pixels and LLMs
+        </h2>
+
+        <p class="article-summary">
+          Large language models understand the world through discrete token IDs mapped to dense dimensional vectors. Raw image files, by contrast, are continuous grids of pixel brightness values across red, green, and blue color channels. Vision-Language Models (VLMs) like LLaVA, GPT-4o, and Gemini bridge this sensory divide without building new model architectures from scratch. By slicing images into 2D patches, encoding spatial features with a pre-trained Vision Transformer (ViT or SigLIP), and transforming visual embeddings into the LLM's native token embedding space via lightweight multimodal projection layers, modern systems treat visual patches identically to textual words, unlocking unified multimodal reasoning.
+        </p>
+
+        <div class="article-body">
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: The Mandarin Technical Manual and The Fast Translation Liaison
+            </div>
+            Imagine a brilliant legal scholar who only speaks English receiving a page from a Mandarin engineering manual containing diagrams and blueprints.<br><br>Under an <strong>Attempt to Force Raw Data (Direct Pixel Feeding)</strong>, someone reads the raw ASCII byte codes of the JPEG file aloud to the scholar: '0xFF, 0xD8, 0xFF, 0xE0'. The scholar becomes completely disoriented by meaningless numerical noise.<br><br>Under <strong>The Modern VLM Architecture (The Patch Interpreter and Projection Liaison)</strong>, an art archivist first cuts the blueprint page into a 14x14 grid of small square tiles (Patch Projection). The archivist examines each tile's lines, gradients, and textures with a magnifying glass (Vision Transformer). Then, a bilingual liaison translates those visual descriptors into standardized English legal terminology that matches the scholar's vocabulary (The Multimodal Projection Layer). The scholar simply receives a sequence of descriptive concepts right alongside the user's question, understanding the visual layout effortlessly.
+          </div>
+
+          <h3>1. From Pixels to Patches: How Vision Transformers Slice the World</h3>
+          <p>
+            Feeding raw pixel values directly into transformer attention layers is mathematically intractable. A standard $1024 \times 1024$ image has over 3 million subpixel values; self-attention across 3 million inputs would require trillions of operations for a single image.<br><br>&bull; <strong>Patch Tokenization</strong>: Vision Transformers (ViT) solve this by slicing an image $I \in \mathbb{R}^{H \times W \times C}$ into a grid of non-overlapping 2D patches of size $P \times P$ (typically $14 \times 14$ or $16 \times 16$). A $336 \times 336$ image yields exactly $(336/14) \times (336/14) = 24 \times 24 = 576$ visual patches.<br>&bull; <strong>Linear Patch Projection</strong>: Each flattened patch of $14 \times 14 \times 3 = 588$ pixel values is multiplied by a learned linear projection matrix $W_{patch}$ to produce a vector of dimension $d_{vision}$ (e.g., 1024). 2D positional embeddings are added so the network retains horizontal and vertical spatial geometry.
+          </p>
+
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 700 170" width="100%" height="170" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="20" width="205" height="140" rx="8" fill="#151822" stroke="#38bdf8" stroke-width="1.2" /><text x="122" y="42" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">1. IMAGE PATCH EXTRACTION</text><rect x="32" y="54" width="181" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="122" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Input Image: 336 x 336 x 3</text><text x="122" y="81" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Split into 14x14 Patches</text><rect x="32" y="94" width="181" height="36" rx="4" fill="rgba(56,189,248,0.12)" stroke="#38bdf8" /><text x="122" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Vision Transformer (SigLIP / ViT)</text><text x="122" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">576 Visual Patch Embeddings</text><text x="122" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Spatial Feature Vector Extraction</text><line x1="225" y1="90" x2="245" y2="90" stroke="#f59e0b" stroke-width="2" /><polygon points="245,90 238,86 238,94" fill="#f59e0b" /><rect x="245" y="20" width="210" height="140" rx="8" fill="#151822" stroke="#f59e0b" stroke-width="1.2" /><text x="350" y="42" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">2. MULTIMODAL CONNECTOR</text><rect x="257" y="54" width="186" height="34" rx="4" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" /><text x="350" y="68" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">2-Layer MLP Projector (GELU)</text><text x="350" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Dimension: d_vision (1024) &#x2192; d_llm (4096)</text><rect x="257" y="94" width="186" height="36" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="350" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Prefix Token Concatenation</text><text x="350" y="122" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">[Visual Tokens] + [Text Prompt]</text><text x="350" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Manifold Translation Layer</text><line x1="455" y1="90" x2="475" y2="90" stroke="#34d399" stroke-width="2" /><polygon points="475,90 468,86 468,94" fill="#34d399" /><rect x="475" y="20" width="205" height="140" rx="8" fill="#151822" stroke="#34d399" stroke-width="1.2" /><text x="577" y="42" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">3. UNIFIED LLM REASONING</text><rect x="487" y="54" width="181" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="577" y="68" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Base Transformer Decoder</text><text x="577" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Full Cross-Attention Across Pixels</text><rect x="487" y="94" width="181" height="36" rx="4" fill="rgba(52,211,153,0.12)" stroke="#34d399" /><text x="577" y="108" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Visual Grounding &amp; VQA &#x2714;</text><text x="577" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">100% Standard Autoregression &#x2714;</text><text x="577" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Native Multimodal Intelligence</text></svg>
+          </div>
+
+          <h3>2. The Multimodal Connector: Aligning Latent Dimensional Spaces</h3>
+          <p>
+            Even after encoding, visual patch vectors cannot be handed directly to an LLM because their dimensional spaces and semantic representations are incompatible ($d_{vision} \neq d_{text}$):<br><br>&bull; <strong>MLP Projectors (The LLaVA Approach)</strong>: Popularized by LLaVA (Large Language and Vision Assistant), modern open VLMs use a 2-layer Multi-Layer Perceptron (MLP) with GELU activation functions. The projector maps the 576 visual vectors from $d_{vision}$ (e.g., 1024) into the LLM's token embedding dimension $d_{llm}$ (e.g., 4096).<br>&bull; <strong>Cross-Attention vs. Prefix Concatenation</strong>: Older architectures (like DeepMind's Flamingo) used gated cross-attention layers inserted between frozen LLM blocks. Modern architectures favor prefix concatenation: visual tokens are simply prepended to the prompt token sequence: <code>[BOS, &lt;image_patch_1&gt;, ..., &lt;image_patch_576&gt;, 'What', 'is', 'in', 'this', 'photo?', EOS]</code>.<br>&bull; <strong>Spatial Compression</strong>: To prevent 576 visual tokens from consuming excessive context window memory, architectures use $2 \times 2$ pixel shuffles or spatial pooling, compressing 4 adjacent patches into 1 visual token.
+          </p>
+
+          <h3>3. The Two-Stage Training Recipe: Alignment to Instruction Tuning</h3>
+          <p>
+            Training a production Vision-Language Model involves a disciplined two-stage curriculum:<br><br>&bull; <strong>Stage 1: Pre-training for Feature Alignment</strong>: The pre-trained Vision Encoder (SigLIP/CLIP) and the base LLM are frozen. Only the lightweight MLP projector is trained on millions of simple image-caption pairs (e.g., CC3M). The projector learns the dictionary translation from visual features into the text embedding manifold.<br>&bull; <strong>Stage 2: Visual Instruction Tuning</strong>: The projector and the LLM weights are unfrozen while the Vision Encoder remains frozen. The model is fine-tuned on diverse conversational data, visual question answering (VQA), chart reading, and coordinate bounding-box grounding. The LLM learns to reason over visual tokens with the same syntactic fluencies as human text.
+          </p>
+
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            Vision-Language Models do not reinvent transformer mechanics; they treat visual data as pseudo-text tokens. By dividing images into discrete 2D patches with Vision Transformers and mapping visual feature vectors into the LLM's native embedding space via trained projection layers, models can reason across pixels and text with a single unified decoder.
+          </div>
+        </div>
+
+        <div class="ai-explainer-box">
+          <div class="ai-explainer-info">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
+          </div>
+          <div class="ai-btn-group">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'vision-language-models-patch-projection-llava')">
+              <i class="fa-solid fa-robot"></i> ChatGPT
+            </button>
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'vision-language-models-patch-projection-llava')">
+              <i class="fa-solid fa-brain"></i> Claude
+            </button>
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'vision-language-models-patch-projection-llava')">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
+            </button>
+          </div>
+        </div>
+
+        <div class="article-footer">
+          <span>Curated Tech Notes</span>
+          <span>Category: Multimodal AI & Vision Transformers</span>
+        </div>
+      </article>
+
+      <!-- Article: November 7, 2026 -->
+      <article class="article-card" id="dead-letter-queues-poison-pill-retry-jitter" data-category="system-design" data-keywords="dead letter queue dlq poison pill message queues kafka rabbitmq exponential backoff jitter redelivery loop head of line blocking consumer lag">
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">Message Queues</span>
+            <span class="article-tag">Resilience</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> November 7, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 8 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('dead-letter-queues-poison-pill-retry-jitter', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
+        </div>
+
+        <h2 class="article-title">
+          Dead Letter Queues (DLQs) and Poison Message Handling: Designing Resilient Event Consumers with Backoff and Full Jitter
+        </h2>
+
+        <p class="article-summary">
+          In event-driven distributed systems, message consumer failures are inevitable. While transient network hiccups can be resolved with quick retries, permanent malformed payloads—known as 'poison pills'—can trap consumer threads in infinite redelivery loops, blowing out consumer lag, exhausting thread pools, and triggering cascading outages across downstream services. A production-grade Dead Letter Queue (DLQ) pattern isolates poisoned messages into dedicated inspection queues without stalling message processing. When paired with tiered retry topics, non-blocking asynchronous processing, and exponential backoff with full jitter, DLQs allow distributed architectures to maintain high throughput while preserving faulty events for forensic debugging.
+        </p>
+
+        <div class="article-body">
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: The Paralyzed Airport Belt vs. The Hazmat Quarantine Room
+            </div>
+            Imagine a high-speed airport security conveyor belt processing thousands of passenger carry-on bags per hour.<br><br>Under a <strong>Naive Retry Loop (The Paralyzed Conveyor)</strong>, a passenger deposits a locked suitcase with a prohibited device. The X-ray scanner alarms and halts. The security guard rewinds the belt and scans the exact same suitcase again. It fails again. The guard rewinds and rescans it indefinitely. Thousands of travelers waiting behind this single bad suitcase miss their flights, and the line backs up into the parking garage.<br><br>Under <strong>The Dead Letter Queue Pattern (The Hazmat Quarantine Room)</strong>, the scanner attempts two quick passes. When the suitcase fails repeatedly, a mechanical diverter arm shunts the bag onto a separate side cart (the Dead Letter Queue). The main conveyor belt never pauses for more than a second, travelers continue boarding on schedule, and specialized technicians inspect the quarantined suitcase safely in a separate back room.
+          </div>
+
+          <h3>1. The Anatomy of a Poison Pill and the Head-of-Line Blocking Trap</h3>
+          <p>
+            A 'poison pill' is a message that cannot be processed successfully regardless of how many times a consumer attempts execution:<br><br>&bull; <strong>Root Causes of Poison Payloads</strong>: Common culprits include unversioned JSON schema changes (e.g., unexpected data types or missing mandatory fields), broken database foreign-key invariants, corrupt character encodings, or unhandled null pointers in business code.<br>&bull; <strong>Head-of-Line Blocking in Partitioned Logs</strong>: In ordered partition-based brokers like Apache Kafka, consumer offsets advance sequentially. If consumer thread A rejects a message without committing its offset, it will repeatedly re-fetch that exact same message upon restart or poll. The entire partition freezes, consumer lag spikes exponentially, and real-time dashboards go stale.<br>&bull; <strong>Worker Starvation in Task Queues</strong>: In RabbitMQ or SQS, unacknowledged failed messages get requeued at the head of the queue, spinning CPU cores in a tight fail-and-requeue cycle that deprives legitimate incoming tasks of worker threads.
+          </p>
+
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 700 170" width="100%" height="170" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="20" width="205" height="140" rx="8" fill="#151822" stroke="#38bdf8" stroke-width="1.2" /><text x="122" y="42" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">1. PRIMARY INGESTION STREAM</text><rect x="32" y="54" width="181" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="122" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Main Topic: orders.events</text><text x="122" y="81" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Consumer Worker Processes</text><rect x="32" y="94" width="181" height="36" rx="4" fill="rgba(239,68,68,0.12)" stroke="#ef4444" /><text x="122" y="108" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Poison Pill Detected (Corrupt JSON)</text><text x="122" y="122" fill="#f87171" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Offset Committed &#x2192; No Log Freeze</text><text x="122" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Wire-Speed Partition Progress</text><line x1="225" y1="90" x2="245" y2="90" stroke="#f59e0b" stroke-width="2" /><polygon points="245,90 238,86 238,94" fill="#f59e0b" /><rect x="245" y="20" width="210" height="140" rx="8" fill="#151822" stroke="#f59e0b" stroke-width="1.2" /><text x="350" y="42" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">2. TIERED RETRY WITH JITTER</text><rect x="257" y="54" width="186" height="34" rx="4" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" /><text x="350" y="68" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Delay Topics: retry.10s &#x2192; retry.1m</text><text x="350" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Exponential Backoff: 2^attempt</text><rect x="257" y="94" width="186" height="36" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="350" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Full Random Jitter: rand(0, backoff)</text><text x="350" y="122" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Prevents Thundering Herd Spikes</text><text x="350" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Non-Blocking Asynchronous Retry</text><line x1="455" y1="90" x2="475" y2="90" stroke="#34d399" stroke-width="2" /><polygon points="475,90 468,86 468,94" fill="#34d399" /><rect x="475" y="20" width="205" height="140" rx="8" fill="#151822" stroke="#34d399" stroke-width="1.2" /><text x="577" y="42" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">3. DLQ &amp; REDRIVE CONTROL</text><rect x="487" y="54" width="181" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="577" y="68" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Quarantined to orders.dlq</text><text x="577" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Headers: stack trace, error, time</text><rect x="487" y="94" width="181" height="36" rx="4" fill="rgba(52,211,153,0.12)" stroke="#34d399" /><text x="577" y="108" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Zero Consumer Lag Freeze &#x2714;</text><text x="577" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Safe Replay via Redrive Tool &#x2714;</text><text x="577" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Production Isolation &amp; Audit</text></svg>
+          </div>
+
+          <h3>2. Tiered Retry Topics and Non-Blocking Backoff with Full Jitter</h3>
+          <p>
+            Production systems distinguish between transient errors (database connection timeouts, upstream 503s) and permanent poison pills through progressive tiered retry queues:<br><br>&bull; <strong>Separation of Main and Retry Topics</strong>: When a consumer encounters a transient failure, it commits the offset on the main topic immediately and republishes the payload to a tiered delay topic (e.g., <code>orders.retry.10s</code>, <code>orders.retry.1m</code>, <code>orders.retry.5m</code>). This keeps the main partition moving at wire speed.<br>&bull; <strong>Why Naive Sleep Crashes Consumers</strong>: Never use <code>Thread.sleep()</code> inside a Kafka poll loop. Sleeping exceeds the broker's <code>max.poll.interval.ms</code>, causing the broker to assume the consumer died, kicking it out of the group and triggering costly consumer group rebalances.<br>&bull; <strong>Exponential Backoff with Full Jitter</strong>: To prevent thousands of retrying consumers from hitting an upstream database at the exact same second upon recovery (thundering herd), backoff intervals must incorporate full randomized jitter: <code>sleep_duration = random_between(0, min(max_backoff, initial_interval * 2^attempt))</code>.
+          </p>
+
+          <h3>3. Dead Letter Queue Architecture, Forensics, and Redrive Workflows</h3>
+          <p>
+            Once a message exhausts its maximum retry quota (e.g., 3 failed attempts across all retry stages), it routes directly to the final DLQ topic (e.g., <code>orders.dlq</code>):<br><br>&bull; <strong>Diagnostic Metadata Enrichment</strong>: Before writing to the DLQ, the system injects critical forensic headers: <code>x-original-topic</code>, <code>x-exception-message</code>, <code>x-stack-trace</code>, <code>x-retry-count</code>, and <code>x-failed-at-timestamp</code>, enabling engineers to debug issues without parsing application log files.<br>&bull; <strong>Alerting on Ingestion Velocity</strong>: A DLQ should normally have zero inbound throughput. Any sustained spike in DLQ ingestion triggers high-priority PagerDuty alerts, pointing to a broken deployment or upstream contract violation.<br>&bull; <strong>Automated Redrive Policies</strong>: Once engineers deploy a code fix or run a database schema migration, an operator triggers a redrive tool that reads messages from <code>orders.dlq</code> and republishes them back into the main topic for clean execution.
+          </p>
+
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            An unhandled malformed message can trap consumer threads in infinite retry loops, halting message pipelines and ballooning consumer lag. Resilient systems isolate poison pills into Dead Letter Queues via tiered delayed retry topics and randomized exponential jitter, keeping primary event streams flowing at full speed while preserving failed payloads for safe inspection.
+          </div>
+        </div>
+
+        <div class="ai-explainer-box">
+          <div class="ai-explainer-info">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
+          </div>
+          <div class="ai-btn-group">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'dead-letter-queues-poison-pill-retry-jitter')">
+              <i class="fa-solid fa-robot"></i> ChatGPT
+            </button>
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'dead-letter-queues-poison-pill-retry-jitter')">
+              <i class="fa-solid fa-brain"></i> Claude
+            </button>
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'dead-letter-queues-poison-pill-retry-jitter')">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
+            </button>
+          </div>
+        </div>
+
+        <div class="article-footer">
+          <span>Curated Tech Notes</span>
+          <span>Category: Distributed Messaging & Resilience</span>
+        </div>
+      </article>
+
+      <!-- Article: November 6, 2026 -->
+      <article class="article-card" id="mixture-of-depths-dynamic-compute-transformers" data-category="ai" data-keywords="mixture of depths mod dynamic compute routing conditional computation transformer layers token routing early exit top k routing deepmind">
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">Mixture of Depths</span>
+            <span class="article-tag">Transformer Architecture</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> November 6, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 8 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('mixture-of-depths-dynamic-compute-transformers', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
+        </div>
+
+        <h2 class="article-title">
+          Mixture-of-Depths (MoD): Dynamic Compute Routing and How Transformers Skip Layers for Simple Tokens
+        </h2>
+
+        <p class="article-summary">
+          Standard transformer architectures spend an identical number of floating-point operations (FLOPs) processing every single token, dedicating the exact same compute budget to trivial punctuation marks as to complex reasoning tokens. Mixture-of-Depths (MoD) breaks this computational rigidity by introducing dynamic, learned routing mechanisms that allow tokens to bypass transformer blocks entirely. By enforcing static per-block capacity caps and routing only the most informative tokens through multi-layer perceptron (MLP) and attention layers while trivial tokens skip ahead via residual connections, MoD slashes total training and inference FLOPs by up to 50% without degrading downstream perplexity or language capability.
+        </p>
+
+        <div class="article-body">
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: The Mandatory 32-Stop Line vs. The Express VIP Bypass
+            </div>
+            Think of a manufacturing plant with 32 specialized diagnostic stations along an assembly line.<br><br>Under <strong>Standard Transformers (The Mandatory 32-Stop Line)</strong>, every single product—whether it is a simple plastic screw or an intricate aerospace navigation turbine—must halt at all 32 stations. Technicians spend 5 minutes inspecting a rubber washer, wasting identical factory labor on a simple rubber strip as on a complex multi-stage turbine.<br><br>Under <strong>Mixture-of-Depths (The Express VIP Bypass)</strong>, each station has a fast bypass lane and a smart router at the gate. As items roll down the conveyor, the router quickly checks: 'Is this token a predictable punctuation comma or a common filler word?' If so, it stays in the express fast lane and glides straight to the next block via the residual highway with zero CPU or GPU overhead. Only the top-k most complex, ambiguous tokens enter the heavy computation workshop. The plant completes twice as many units per hour while maintaining identical quality standards.
+          </div>
+
+          <h3>1. The Computational Flaw of Static FLOP Allocation</h3>
+          <p>
+            In standard autoregressive language models (such as Llama 3 or GPT-4), compute allocation is completely uniform across sequence positions. Every token—whether it is a trivial comma, an unambiguous closing bracket, or a complex mathematical step—passes through every single multi-head self-attention and feedforward (MLP) block in the network.<br><br>&bull; <strong>The FLOP Inefficiency</strong>: Information theory shows that token predictability varies wildly across a sequence. Common grammatical glue words require minimal contextual transformation, yet standard transformer backbones force matrix multiplications of identical dimensional size ($d_{model} \times 4d_{model}$) on every token position.<br>&bull; <strong>Static Depth vs. Dynamic Thought</strong>: While human writers spend a split second typing 'and' but pause for minutes deliberating on a key logical deduction, vanilla transformers waste precious matrix compute on trivial tokens while starving difficult reasoning tokens of additional computational depth.
+          </p>
+
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 700 170" width="100%" height="170" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="20" width="205" height="140" rx="8" fill="#151822" stroke="#38bdf8" stroke-width="1.2" /><text x="122" y="42" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">1. STANDARD TRANSFORMER</text><rect x="32" y="54" width="181" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="122" y="68" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">100% Tokens Pass All 32 Layers</text><text x="122" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Trivial &amp; Complex = Same FLOPs</text><rect x="32" y="94" width="181" height="36" rx="4" fill="rgba(239,68,68,0.12)" stroke="#ef4444" /><text x="122" y="108" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Wasted Compute on Punctuation</text><text x="122" y="122" fill="#f87171" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Rigid Static Execution Pipeline</text><text x="122" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Heavy Redundant Matrix Multiplies</text><line x1="225" y1="90" x2="245" y2="90" stroke="#f59e0b" stroke-width="2" /><polygon points="245,90 238,86 238,94" fill="#f59e0b" /><rect x="245" y="20" width="210" height="140" rx="8" fill="#151822" stroke="#f59e0b" stroke-width="1.2" /><text x="350" y="42" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">2. MoD LEARNED ROUTING</text><rect x="257" y="54" width="186" height="34" rx="4" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" /><text x="350" y="68" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Scalar Router Score r_i per Token</text><text x="350" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Capacity Cap: C = 0.5 (Top 50%)</text><rect x="257" y="94" width="186" height="36" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="350" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Top-K Tokens: Full Attn + MLP</text><text x="350" y="122" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Bottom 50%: Pure Residual Bypass</text><text x="350" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Static Tensor Shapes for Hardware</text><line x1="455" y1="90" x2="475" y2="90" stroke="#34d399" stroke-width="2" /><polygon points="475,90 468,86 468,94" fill="#34d399" /><rect x="475" y="20" width="205" height="140" rx="8" fill="#151822" stroke="#34d399" stroke-width="1.2" /><text x="577" y="42" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">3. THROUGHPUT MULTIPLIER</text><rect x="487" y="54" width="181" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="577" y="68" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">50% Total FLOP Reduction &#x2714;</text><text x="577" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">2x Faster Training &amp; Inference</text><rect x="487" y="94" width="181" height="36" rx="4" fill="rgba(52,211,153,0.12)" stroke="#34d399" /><text x="577" y="108" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Zero Perplexity Loss &#x2714;</text><text x="577" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Pairs Seamlessly with MoE</text><text x="577" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Dynamic Compute Allocation</text></svg>
+          </div>
+
+          <h3>2. Inside MoD: Learned Routing, Top-K Capacity, and Residual Bypass</h3>
+          <p>
+            Mixture-of-Depths solves static compute allocation by conditioning layer depth on token complexity while maintaining static tensor shapes for GPU efficiency:<br><br>&bull; <strong>Scalar Routing Scores</strong>: At each transformer layer, a lightweight linear projection computes a scalar router score $r_i$ for each token in the sequence. This score reflects the marginal utility of processing token $i$ through the current block's attention and MLP weights.<br>&bull; <strong>Top-K Capacity Constraints</strong>: To avoid the dynamic tensor shape pitfalls that plague naive conditional computing on hardware accelerators, MoD enforces a fixed sequence capacity (typically $C = 0.5$, or 50% of sequence length $S$). The router selects the top $k = C \times S$ scoring tokens for full computation.<br>&bull; <strong>Identity Residual Bypass</strong>: The unselected tokens are not discarded. Instead, they completely skip the current layer's self-attention and MLP operations, passing directly to the next layer through standard residual addition ($x_{l+1} = x_l$). Hardware utilization remains predictable and high, while overall floating-point operations drop by half.
+          </p>
+
+          <h3>3. Combining Mixture-of-Depths (MoD) and Mixture-of-Experts (MoE)</h3>
+          <p>
+            The conceptual distinction between MoD and MoE highlights the evolution of modern frontier architectures:<br><br>&bull; <strong>Dynamic Width vs. Dynamic Depth</strong>: Mixture-of-Experts (MoE) dynamically routes tokens across parallel expert layers (dynamic model width). Mixture-of-Depths (MoD) dynamically routes tokens across sequential layers (dynamic model depth).<br>&bull; <strong>Unified MoDE Architectures</strong>: Researchers have successfully fused both approaches into 'Mixture-of-Depths-and-Experts' (MoDE). In MoDE, the router first decides <em>if</em> a token requires compute at this layer; if selected, a secondary router assigns it to the most relevant specialized expert. This enables models to run 2x to 3x faster during both prefill and autoregressive decoding without expanding memory bandwidth footprints.
+          </p>
+
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            Standard transformers waste massive compute by forcing predictable tokens through every attention and MLP layer. Mixture-of-Depths (MoD) uses learned top-k routing to send only complex tokens into deep computations while trivial tokens bypass layers via residual connections, cutting FLOP consumption by up to 50% without sacrificing perplexity.
+          </div>
+        </div>
+
+        <div class="ai-explainer-box">
+          <div class="ai-explainer-info">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
+          </div>
+          <div class="ai-btn-group">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'mixture-of-depths-dynamic-compute-transformers')">
+              <i class="fa-solid fa-robot"></i> ChatGPT
+            </button>
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'mixture-of-depths-dynamic-compute-transformers')">
+              <i class="fa-solid fa-brain"></i> Claude
+            </button>
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'mixture-of-depths-dynamic-compute-transformers')">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
+            </button>
+          </div>
+        </div>
+
+        <div class="article-footer">
+          <span>Curated Tech Notes</span>
+          <span>Category: LLM Architecture & Compute Efficiency</span>
+        </div>
+      </article>
+
+
             <!-- Article: November 5, 2026 -->
-      <article class="article-card featured" id="lmax-disruptor-lock-free-ring-buffer" data-category="backend" data-keywords="lmax disruptor lock free ring buffer false sharing cache lines mechanical sympathy high frequency trading atomic cas">
+      <article class="article-card" id="lmax-disruptor-lock-free-ring-buffer" data-category="backend" data-keywords="lmax disruptor lock free ring buffer false sharing cache lines mechanical sympathy high frequency trading atomic cas">
         <div class="article-header-top">
           <div class="article-meta">
             <span class="article-tag">Concurrency</span>
