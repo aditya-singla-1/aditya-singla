@@ -1,4 +1,7 @@
 [
+  "2026-11-12-flash-decoding-long-context-inference.json",
+  "2026-11-11-zero-downtime-schema-migrations-expand-contract.json",
+  "2026-11-10-mamba-state-space-models-linear-time-sequence.json",
   "2026-11-09-tcp-time-wait-ephemeral-port-exhaustion.json",
   "2026-11-08-vision-language-models-patch-projection-llava.json",
   "2026-11-07-dead-letter-queues-poison-pill-retry-jitter.json",

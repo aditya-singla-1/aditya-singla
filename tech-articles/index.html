@@ -641,7 +641,7 @@ a {
           <input type="text" id="article-search" class="search-input" placeholder="Search tech articles, AI topics, keywords..." autocomplete="off">
         </div>
         <div class="filter-chips">
-          <button class="filter-chip active" data-category="all">All Articles (73)</button>
+          <button class="filter-chip active" data-category="all">All Articles (76)</button>
           <button class="filter-chip" data-category="ai">AI & LLM Infra</button>
           <button class="filter-chip" data-category="system-design">System Design</button>
           <button class="filter-chip" data-category="databases">Databases & Data Eng</button>
@@ -654,8 +654,242 @@ a {
   <main class="container">
     <div class="article-list" id="article-container">
 
+      <!-- Article: November 12, 2026 -->
+      <article class="article-card featured" id="flash-decoding-long-context-inference" data-category="ai" data-keywords="flash decoding flashattention llm inference long context kv cache streaming multiprocessor memory bound autoregressive generation softmax reduction tree">
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">LLM Inference</span>
+            <span class="article-tag">GPU Architecture</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> November 12, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 8 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('flash-decoding-long-context-inference', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
+        </div>
+
+        <h2 class="article-title">
+          FlashDecoding Under the Hood: Parallelizing KV-Cache Attention Along Sequence Length to Solve the Autoregressive Decoding Bottleneck
+        </h2>
+
+        <p class="article-summary">
+          While FlashAttention revolutionized large language model training and prompt prefill by computing exact attention in fast GPU on-chip SRAM, it falters during autoregressive generation at long context lengths. During the decoding phase, a model evaluates only a single query token (Q length = 1) against thousands or millions of cached Key and Value tokens. Because standard FlashAttention parallelizes work exclusively across batch size and query heads, small batch queries leave up to 80% of GPU Streaming Multiprocessors (SMs) completely idle, severely throttling token generation speeds. FlashDecoding solves this architectural mismatch by parallelizing attention computation directly along the KV sequence length dimension. By splitting the KV cache into independent chunks, computing partial softmax reductions concurrently across all SMs, and synchronizing results with a tree reduction, FlashDecoding achieves up to 8x faster generation at long context lengths without changing model weights.
+        </p>
+
+        <div class="article-body">
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: The Single Inspector with a Warehouse vs. The Swarm of Section Inspectors
+            </div>
+            Imagine a mega-warehouse containing 100,000 document files, and a company must check one new incoming invoice against every archived file to find relevant correlations.<br><br>Under <strong>Standard FlashAttention During Decoding (The Single Inspector)</strong>, the company has 100 skilled inspectors (GPU Streaming Multiprocessors) standing ready in the lobby. But company policy dictates: 'Only one inspector per client account!' Because only one invoice is being processed (Batch size = 1), 1 inspector is assigned to read all 100,000 files one by one, while the other 99 inspectors stand around playing on their phones. Inspection takes minutes because 99% of available human compute is wasted.<br><br>Under <strong>FlashDecoding (The Swarm of Section Inspectors)</strong>, the manager splits the warehouse into 100 equal aisles of 1,000 files each and sends all 100 inspectors into the aisles simultaneously. Each inspector computes an aisle-level partial correlation score in parallel. In the final five seconds, all 100 inspectors bring their summary scores to a supervisor who runs a quick mathematical consolidation (Log-Sum-Exp tree reduction). The entire warehouse check completes in fractions of a second, with 100% workforce utilization.
+          </div>
+
+          <h3>1. Prefill vs. Generation: Why FlashAttention Fails During Single-Token Decoding</h3>
+          <p>
+            FlashAttention achieved dramatic speedups by tiling inputs to fit within fast GPU on-chip SRAM, avoiding slow round-trips to High Bandwidth Memory (HBM). During the prompt prefill phase, queries and keys both span thousands of tokens ($S_Q = S_K$). The GPU easily parallelizes across batch size $B$, query heads $H$, and sequence length blocks, spawning thousands of concurrent thread blocks that fully occupy all 108–132 Streaming Multiprocessors (SMs) on NVIDIA A100 or H100 GPUs.<br><br>&bull; <strong>The Autoregressive Under-Occupancy Trap</strong>: During token generation (decoding), the model computes attention for only a single new token at a time: $S_Q = 1$. Standard FlashAttention parallelizes solely across the $B \times H$ dimension. If an application serves a low-latency single user query ($B = 1$) on a model with 32 attention heads ($H = 32$), exactly 32 thread blocks are scheduled.<br>&bull; <strong>Hardware Waste on Modern GPUs</strong>: An NVIDIA H100 GPU features 132 SMs. Scheduling only 32 thread blocks leaves 100 SMs (over 75% of the GPU) completely unallocated! Meanwhile, those 32 active thread blocks struggle to read megabytes of KV cache over the memory bus, dragging generation speeds down to an agonizing crawl.
+          </p>
+
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 700 170" width="100%" height="170" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="20" width="205" height="140" rx="8" fill="#151822" stroke="#38bdf8" stroke-width="1.2" /><text x="122" y="42" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">1. STANDARD FLASHATTENTION</text><rect x="32" y="54" width="181" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="122" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Decoding Phase: Q length = 1</text><text x="122" y="81" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Parallelizes Over B x H Only</text><rect x="32" y="94" width="181" height="36" rx="4" fill="rgba(239,68,68,0.12)" stroke="#ef4444" /><text x="122" y="108" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">32 Heads on 132 SMs &#x2717;</text><text x="122" y="122" fill="#f87171" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">75%+ GPU Cores Sit Idle</text><text x="122" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Severe Long-Context Throttle</text><line x1="225" y1="90" x2="245" y2="90" stroke="#f59e0b" stroke-width="2" /><polygon points="245,90 238,86 238,94" fill="#f59e0b" /><rect x="245" y="20" width="210" height="140" rx="8" fill="#151822" stroke="#f59e0b" stroke-width="1.2" /><text x="350" y="42" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">2. SEQUENCE KV SLICING</text><rect x="257" y="54" width="186" height="34" rx="4" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" /><text x="350" y="68" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Split S_kv into 256-Token Chunks</text><text x="350" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">32 Heads x 128 Chunks = 4,096 Blocks</text><rect x="257" y="94" width="186" height="36" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="350" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Full SM Hardware Occupancy</text><text x="350" y="122" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Max Memory Bandwidth Saturation</text><text x="350" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Concurrent Partial Attentions</text><line x1="455" y1="90" x2="475" y2="90" stroke="#34d399" stroke-width="2" /><polygon points="475,90 468,86 468,94" fill="#34d399" /><rect x="475" y="20" width="205" height="140" rx="8" fill="#151822" stroke="#34d399" stroke-width="1.2" /><text x="577" y="42" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">3. TREE REDUCTION</text><rect x="487" y="54" width="181" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="577" y="68" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Log-Sum-Exp Online Rescaling</text><text x="577" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Merges Partial Maxima &amp; Sums</text><rect x="487" y="94" width="181" height="36" rx="4" fill="rgba(52,211,153,0.12)" stroke="#34d399" /><text x="577" y="108" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Exact Softmax Preserved &#x2714;</text><text x="577" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Up to 8x Faster Decoding &#x2714;</text><text x="577" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Sub-Millisecond Token Latency</text></svg>
+          </div>
+
+          <h3>2. Sequence-Dimension Parallelization: Slicing the KV Cache Across SMs</h3>
+          <p>
+            FlashDecoding overcomes this hardware under-utilization by adding a new axis of parallelism: the Key and Value sequence dimension ($S_{KV}$):<br><br>&bull; <strong>Chunked Sequence Tiling</strong>: Instead of forcing one thread block to traverse the entire context window for an attention head, FlashDecoding divides the historical KV cache into discrete sequence chunks of size $C$ (typically 256 or 512 tokens). For a sequence length of 32,768 tokens, $32,768 / 256 = 128$ independent chunks are created per head.<br>&bull; <strong>Massive Thread Block Creation</strong>: With 32 attention heads and 128 chunks per head, FlashDecoding generates $32 \times 128 = 4,096$ concurrent thread blocks. Every single SM on the GPU is flooded with work. Multiple thread blocks execute simultaneously on each SM, masking memory fetch latencies and maximizing read throughput across the GPU's memory controllers.<br>&bull; <strong>Kernel Fusion in SRAM</strong>: Each thread block executes the standard FlashAttention inner loop over its assigned chunk: loading the single query token into SRAM, streaming the 256 KV tokens, and calculating partial attention outputs entirely in registers and shared memory.
+          </p>
+
+          <h3>3. Numerical Stability and The Log-Sum-Exp Reduction Tree</h3>
+          <p>
+            Because the softmax function $\text{softmax}(x)_i = \frac{e^{x_i}}{\sum e^{x_j}}$ is non-linear and requires the global maximum across all sequence tokens, combining results from independent chunks requires exact mathematical reduction:<br><br>&bull; <strong>Tracking Partial Statistics</strong>: Each sequence chunk $k$ computes and outputs three values: the partial attention output vector $O^{(k)}$, the local maximum value $m^{(k)} = \max(x^{(k)})$, and the local accumulator $l^{(k)} = \sum e^{x^{(k)} - m^{(k)}}$. These small statistics are written to a lightweight intermediate staging buffer in global memory.<br>&bull; <strong>The Rescaling Tree Reduction</strong>: Once all sequence chunks finish, a secondary, highly efficient reduction kernel is launched. It merges chunk pairs using the safe online softmax update formulas: $m = \max(m_1, m_2)$, and updates normalizers via $l = l_1 e^{m_1 - m} + l_2 e^{m_2 - m}$. The final output is rescaled as $O = O_1 \frac{l_1 e^{m_1 - m}}{l} + O_2 \frac{l_2 e^{m_2 - m}}{l}$.<br>&bull; <strong>Negligible Synchronization Overhead</strong>: Because the reduction operates only on the aggregated chunk statistics (128 vectors per head) rather than individual tokens, the reduction phase consumes less than 1% of the total kernel execution time, delivering up to 8x end-to-end decoding speedups.
+          </p>
+
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            Autoregressive LLM generation with long contexts is fundamentally memory-bandwidth bound and under-utilizes GPU cores due to single-token queries. FlashDecoding restores maximum GPU occupancy by partitioning the Key-Value sequence length across independent Streaming Multiprocessors, combining partial attention outputs via a lightweight log-sum-exp reduction tree to deliver up to 8x lower decoding latency.
+          </div>
+        </div>
+
+        <div class="ai-explainer-box">
+          <div class="ai-explainer-info">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
+          </div>
+          <div class="ai-btn-group">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'flash-decoding-long-context-inference')">
+              <i class="fa-solid fa-robot"></i> ChatGPT
+            </button>
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'flash-decoding-long-context-inference')">
+              <i class="fa-solid fa-brain"></i> Claude
+            </button>
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'flash-decoding-long-context-inference')">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
+            </button>
+          </div>
+        </div>
+
+        <div class="article-footer">
+          <span>Curated Tech Notes</span>
+          <span>Category: LLM Inference Systems &amp; GPU Architecture</span>
+        </div>
+      </article>
+
+      <!-- Article: November 11, 2026 -->
+      <article class="article-card" id="zero-downtime-schema-migrations-expand-contract" data-category="databases" data-keywords="zero downtime schema migrations expand and contract pattern shadow tables ghost triggers pt online schema change dual write database locks pg repack">
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">Database Architecture</span>
+            <span class="article-tag">Zero-Downtime</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> November 11, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 8 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('zero-downtime-schema-migrations-expand-contract', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
+        </div>
+
+        <h2 class="article-title">
+          Zero-Downtime Database Schema Migrations: The Expand and Contract Pattern, Shadow Tables, and Ghost Triggers for Mission-Critical Databases
+        </h2>
+
+        <p class="article-summary">
+          In high-volume transactional databases handling thousands of queries per second, running naive DDL commands like ALTER TABLE ADD COLUMN, MODIFY COLUMN, or CREATE INDEX can trigger disastrous production outages. Relational database engines (PostgreSQL and MySQL) acquire Access Exclusive or metadata locks that stall concurrent transactions, causing connection pools to saturate within seconds. To alter multi-gigabyte or terabyte tables without downtime, engineering organizations rely on the Expand and Contract (Parallel Run) pattern and online schema change engines like GitHub's gh-ost and Percona's pt-online-schema-change. By introducing non-breaking additive changes, orchestrating asynchronous backfills, dual-writing new records, and executing an atomic table swap, teams safely transform database schemas without dropping a single customer request.
+        </p>
+
+        <div class="article-body">
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: The Mid-Flight Airplane Wing Replacement vs. Closing the Airport Runway
+            </div>
+            Imagine a major international airport runway that handles 60 flights per minute.<br><br>Under a <strong>Naive In-Place Schema Migration (Closing the Runway)</strong>, civil engineers park heavy bulldozers across the main runway to repave it. Incoming flights cannot land and circle in holding patterns until their fuel reserves deplete, triggering emergency diversions and total airline gridlock (connection pool exhaustion and HTTP 504 gateway timeouts).<br><br>Under <strong>The Expand and Contract Pattern (The Parallel Bypass Runway)</strong>, airport engineers pave a brand-new parallel runway alongside the existing one without touching ongoing traffic (Expand Phase / Shadow Table). Ground radar copies all navigation telemetry from the old runway to the new one while construction crews pave in the background (Backfill &amp; CDC). Once the new runway is certified, air traffic control performs a synchronized 5-millisecond signal switch, directing all subsequent flights to the new strip (Atomic Cutover). The old runway is then dismantled at leisure (Contract Phase). Zero flights are delayed.
+          </div>
+
+          <h3>1. The Danger of Exclusive Metadata Locks (The DDL Trap)</h3>
+          <p>
+            In relational database systems, schema alterations require locks to ensure catalog consistency. In PostgreSQL, commands like <code>ALTER TABLE ADD COLUMN ... DEFAULT</code> (in older versions) or changing column types demand an <code>AccessExclusiveLock</code>. In MySQL (InnoDB), altering columns requests an exclusive Metadata Lock (<code>MDL_EXCLUSIVE</code>).<br><br>&bull; <strong>The Lock Queue Domino Effect</strong>: An exclusive lock cannot be granted until every running query on that table finishes. While the DDL statement waits in the lock queue, all subsequent incoming queries—even fast, lightweight 1-millisecond <code>SELECT</code> queries—are blocked behind the waiting DDL. Within seconds, database connection pools are depleted, downstream application servers run out of threads, and the entire platform crashes.<br>&bull; <strong>Long-Running Transactions as Obstacles</strong>: An uncommitted analytics report or an open cursor blocks DDL acquisition indefinitely, creating an invisible roadblock that converts a minor 2-second schema patch into a severe site-wide outage.
+          </p>
+
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 700 170" width="100%" height="170" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="20" width="205" height="140" rx="8" fill="#151822" stroke="#38bdf8" stroke-width="1.2" /><text x="122" y="42" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">1. EXPAND &amp; SHADOW TABLE</text><rect x="32" y="54" width="181" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="122" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Create _table_shadow</text><text x="122" y="81" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">New Non-Breaking Schema</text><rect x="32" y="94" width="181" height="36" rx="4" fill="rgba(56,189,248,0.12)" stroke="#38bdf8" /><text x="122" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Application Dual-Writing</text><text x="122" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Reads Old / Writes Both</text><text x="122" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Zero Table Locks Acquired</text><line x1="225" y1="90" x2="245" y2="90" stroke="#f59e0b" stroke-width="2" /><polygon points="245,90 238,86 238,94" fill="#f59e0b" /><rect x="245" y="20" width="210" height="140" rx="8" fill="#151822" stroke="#f59e0b" stroke-width="1.2" /><text x="350" y="42" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">2. CHUNKED BACKFILL &amp; CDC</text><rect x="257" y="54" width="186" height="34" rx="4" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" /><text x="350" y="68" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Bounded Keyset Batches (1k rows)</text><text x="350" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Copies Historical Rows via PK</text><rect x="257" y="94" width="186" height="36" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="350" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Binlog Stream Replay (gh-ost)</text><text x="350" y="122" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Auto-Throttles on Replica Lag</text><text x="350" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">No Trigger Lock Contention</text><line x1="455" y1="90" x2="475" y2="90" stroke="#34d399" stroke-width="2" /><polygon points="475,90 468,86 468,94" fill="#34d399" /><rect x="475" y="20" width="205" height="140" rx="8" fill="#151822" stroke="#34d399" stroke-width="1.2" /><text x="577" y="42" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">3. ATOMIC CUTOVER &amp; CONTRACT</text><rect x="487" y="54" width="181" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="577" y="68" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Atomic Rename Swap (2ms)</text><text x="577" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">RENAME TABLE users &#x2194; shadow</text><rect x="487" y="94" width="181" height="36" rx="4" fill="rgba(52,211,153,0.12)" stroke="#34d399" /><text x="577" y="108" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Contract Phase: Drop Deprecated &#x2714;</text><text x="577" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Zero Dropped Transactions &#x2714;</text><text x="577" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Continuous High Availability</text></svg>
+          </div>
+
+          <h3>2. The Three-Phase Expand and Contract Architecture</h3>
+          <p>
+            To eliminate blocking operations, high-throughput systems decouple schema evolution into three asynchronous, backwards-compatible stages:<br><br>&bull; <strong>Phase 1: Expand (Additive Non-Breaking Changes)</strong>: Never alter or rename an existing column directly. Instead, create a new column (e.g., <code>phone_number_v2</code>) or instantiate a shadow table with the revised schema. Deploy application code that continues reading from the old representation while writing simultaneously to both old and new columns (dual-writing).<br>&bull; <strong>Phase 2: Transition &amp; Backfill</strong>: Historical records are migrated using a dedicated asynchronous background worker. The worker reads un-migrated rows in bounded batches (e.g., 1,000 primary keys at a time) using keyset pagination, applying transformations and populating the new column without generating replication lag or spikes in I/O utilization.<br>&bull; <strong>Phase 3: Contract (Cutover &amp; Cleanup)</strong>: Once data verification scripts confirm 100% parity between old and new columns, application code is deployed to read exclusively from the new column. After monitoring error rates, the dual-write code is removed, and the deprecated column is safely dropped in a final, low-risk cleanup step.
+          </p>
+
+          <h3>3. Online Schema Change Internals: Trigger-Based vs. Binlog-Based (gh-ost)</h3>
+          <p>
+            For large-scale structural changes (such as rebuilding multi-hundred gigabyte tables or modifying primary keys), specialized online schema migration tools manage the shadow table lifecycle:<br><br>&bull; <strong>Trigger-Based Engines (pt-online-schema-change)</strong>: Creates a shadow table (<code>_users_new</code>) and attaches synchronous SQL triggers (<code>AFTER INSERT/UPDATE/DELETE</code>) to the original table. Every transactional write to the production table synchronously duplicates into the shadow table. However, triggers introduce heavy lock contention on high-concurrency tables and can double write latency.<br>&bull; <strong>Binlog-Based Engines (GitHub's gh-ost)</strong>: Avoids SQL triggers entirely. <code>gh-ost</code> connects to the database as an asynchronous replication follower, reading row changes directly from the MySQL binary log (binlog) and replaying them into the shadow table. If production database metrics (such as replication lag, CPU, or active threads) breach configured safety thresholds, <code>gh-ost</code> automatically throttles or pauses its backfill.<br>&bull; <strong>The Atomic Table Swap</strong>: When the shadow table matches the primary, <code>gh-ost</code> locks the original table and performs an atomic rename: <code>RENAME TABLE users TO _users_old, _users_new TO users</code>. This swap completes in milliseconds, guaranteeing seamless continuity.
+          </p>
+
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            Never alter high-throughput relational tables in-place. The Expand and Contract pattern decouples database schema alterations into additive expansions, decoupled background backfills, and atomic cutovers. Utilizing binary-log tailing engines like gh-ost rather than transactional database triggers eliminates row-lock contention and protects mission-critical systems from catastrophic connection pool exhaustion.
+          </div>
+        </div>
+
+        <div class="ai-explainer-box">
+          <div class="ai-explainer-info">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
+          </div>
+          <div class="ai-btn-group">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'zero-downtime-schema-migrations-expand-contract')">
+              <i class="fa-solid fa-robot"></i> ChatGPT
+            </button>
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'zero-downtime-schema-migrations-expand-contract')">
+              <i class="fa-solid fa-brain"></i> Claude
+            </button>
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'zero-downtime-schema-migrations-expand-contract')">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
+            </button>
+          </div>
+        </div>
+
+        <div class="article-footer">
+          <span>Curated Tech Notes</span>
+          <span>Category: Database Internals &amp; High-Throughput Backends</span>
+        </div>
+      </article>
+
+      <!-- Article: November 10, 2026 -->
+      <article class="article-card" id="mamba-state-space-models-linear-time-sequence" data-category="ai" data-keywords="mamba state space models ssm selective state space s6 linear time complexity transformer attention bottleneck hardware aware scan associative scan">
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">State Space Models</span>
+            <span class="article-tag">Mamba Architecture</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> November 10, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 8 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('mamba-state-space-models-linear-time-sequence', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
+        </div>
+
+        <h2 class="article-title">
+          Mamba and State Space Models (SSMs): Escaping Transformer Quadratic Bottlenecks via Selective State Spaces and Hardware-Aware Scans
+        </h2>
+
+        <p class="article-summary">
+          Transformers dominate contemporary AI, yet their foundational self-attention mechanism scales quadratically O(N^2) with sequence length. As context windows expand to hundreds of thousands of tokens, key-value (KV) cache memory footprints and quadratic compute costs become severe bottlenecks during inference. State Space Models (SSMs), culminating in Mamba, provide a compelling sub-quadratic alternative that processes sequences in linear time O(N) with a constant memory footprint O(1) during autoregressive generation. By making state transition parameters input-dependent (Selective SSM / S6) and designing a hardware-aware parallel prefix scan that eliminates GPU High Bandwidth Memory (HBM) read/write traffic, Mamba achieves transformer-grade reasoning accuracy while generating tokens up to five times faster at long context lengths.
+        </p>
+
+        <div class="article-body">
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: The Endless Photo Album vs. The Rolling Mental Summary
+            </div>
+            Imagine an analyst preparing an ongoing executive intelligence brief.<br><br>Under <strong>Transformer Self-Attention (The Endless Photo Album)</strong>, every time a new sentence is read, the analyst lays out every single page written since day one across a giant conference table. To write token number 100,000, the analyst must cross-compare the new word against all 99,999 previous words. The conference table eventually runs out of space (GPU VRAM exhaustion), and neck fatigue slows reading to a crawl (quadratic compute and memory-bandwidth bound latency).<br><br>Under <strong>Mamba State Space Models (The Rolling Mental Summary)</strong>, the analyst keeps a concise, fixed-size executive notebook. As each new piece of information arrives, the analyst selectively filters: if the news is critical, the notebook's internal state updates; if it is filler, the analyst ignores it. Writing the next word requires consulting only the compact notebook, regardless of whether 100 or 1,000,000 words have passed. Memory usage remains perfectly constant, and writing stays lightning fast.
+          </div>
+
+          <h3>1. The Quadratic Wall: Why Attention Stalls at Long Sequences</h3>
+          <p>
+            The standard scaled dot-product attention mechanism computes $\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$. For a prompt of length $N$, calculating the $N \times N$ attention matrix consumes $O(N^2)$ compute operations and requires materializing quadratic memory buffers.<br><br>&bull; <strong>The KV Cache Explosion</strong>: During autoregressive token generation, transformers save past key and value vectors into high-bandwidth GPU memory (HBM). For an 8B model with 128k context, the KV cache alone consumes over 16 GB of VRAM per concurrent user request, squeezing throughput down to single-digit tokens per second.<br>&bull; <strong>The Recurrent Dilemma</strong>: Classical Recurrent Neural Networks (RNNs) solve memory bloat by maintaining a hidden state vector $h_t$ with constant $O(1)$ inference cost. However, traditional RNNs cannot be trained in parallel across sequence steps, and their static state dynamics cause catastrophic forgetting across extended contexts.
+          </p>
+
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 700 170" width="100%" height="170" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="20" width="205" height="140" rx="8" fill="#151822" stroke="#38bdf8" stroke-width="1.2" /><text x="122" y="42" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">1. TRANSFORMER ATTENTION</text><rect x="32" y="54" width="181" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="122" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">Full QK^T Attention Matrix</text><text x="122" y="81" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Compute: O(N^2) Quadratic</text><rect x="32" y="94" width="181" height="36" rx="4" fill="rgba(239,68,68,0.12)" stroke="#ef4444" /><text x="122" y="108" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">KV Cache VRAM Explosion &#x2717;</text><text x="122" y="122" fill="#f87171" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Memory Bandwidth Bound Decoding</text><text x="122" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Stalls at 100k+ Context</text><line x1="225" y1="90" x2="245" y2="90" stroke="#f59e0b" stroke-width="2" /><polygon points="245,90 238,86 238,94" fill="#f59e0b" /><rect x="245" y="20" width="210" height="140" rx="8" fill="#151822" stroke="#f59e0b" stroke-width="1.2" /><text x="350" y="42" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">2. SELECTIVE SSM (S6)</text><rect x="257" y="54" width="186" height="34" rx="4" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" /><text x="350" y="68" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">h_t = A(x) h_{t-1} + B(x) x_t</text><text x="350" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Dynamic Step Size Delta(x)</text><rect x="257" y="94" width="186" height="36" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="350" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Input-Dependent Filtering</text><text x="350" y="122" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Forgets Noise / Retains Key Facts</text><text x="350" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Constant O(1) Memory Per Step</text><line x1="455" y1="90" x2="475" y2="90" stroke="#34d399" stroke-width="2" /><polygon points="475,90 468,86 468,94" fill="#34d399" /><rect x="475" y="20" width="205" height="140" rx="8" fill="#151822" stroke="#34d399" stroke-width="1.2" /><text x="577" y="42" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">3. HARDWARE-AWARE SCAN</text><rect x="487" y="54" width="181" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="577" y="68" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Parallel Associative Prefix Scan</text><text x="577" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Fused Kernel Inside GPU SRAM</text><rect x="487" y="94" width="181" height="36" rx="4" fill="rgba(52,211,153,0.12)" stroke="#34d399" /><text x="577" y="108" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Zero HBM State Materialization &#x2714;</text><text x="577" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Linear O(N) Train / 5x Inference &#x2714;</text><text x="577" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Sub-Quadratic Foundation Models</text></svg>
+          </div>
+
+          <h3>2. From Continuous Systems to Selective SSMs (S6): Dynamic Information Filtering</h3>
+          <p>
+            State Space Models originate in classical control theory, describing continuous systems via differential equations: $h'(t) = A h(t) + B x(t)$ and $y(t) = C h(t) + D x(t)$. When discretized for digital computation using zero-order hold (ZOH) with step size $\Delta$, the equations yield discrete matrices $\bar{A} = \exp(\Delta A)$ and $\bar{B} = (\Delta A)^{-1}(\exp(\Delta A) - I) \cdot \Delta B$.<br><br>&bull; <strong>The Linear Time-Invariant (LTI) Flaw</strong>: Earlier structured SSMs (such as S4) held parameters $A, B, C,$ and $\Delta$ constant across all tokens. Because the system was strictly linear and time-invariant, it could be calculated as a global convolution during training, but it suffered from an inability to selectively forget irrelevant tokens or focus on surprising keywords.<br>&bull; <strong>The Selective S6 Mechanism</strong>: Mamba overcomes this limitation by making parameters $B$, $C$, and the step size $\Delta$ dynamic functions of the current input token: $B_t = \text{Linear}(x_t)$, $C_t = \text{Linear}(x_t)$, and $\Delta_t = \text{Softplus}(\text{Parameter} + \text{Linear}(x_t))$. When $\Delta_t$ is large, the model resets its state to absorb the current token; when $\Delta_t$ is near zero, it ignores the input and preserves its historical memory.
+          </p>
+
+          <h3>3. The Hardware-Aware Parallel Associative Scan: Keeping Computation in SRAM</h3>
+          <p>
+            Making parameters token-dependent breaks the convolution equivalence: Mamba cannot use Fast Fourier Transforms (FFTs) for training. Naively iterating through the recurrence step-by-step would be dreadfully slow on GPUs due to continuous round-trips to high-latency HBM.<br><br>&bull; <strong>Kernel Fusion in SRAM</strong>: Mamba addresses this by designing a hardware-aware parallel prefix scan kernel in Triton/CUDA. Instead of materializing intermediate state vectors of dimension $(B, L, D, N)$ in slow HBM, Mamba streams input parameters directly into fast on-chip SRAM (192 KB per SM on modern GPUs).<br>&bull; <strong>Associative Prefix Scans</strong>: The linear recurrence $h_t = \bar{A}_t h_{t-1} + \bar{B}_t x_t$ is mathematically associative. Modern GPU streaming multiprocessors execute parallel prefix reductions in $O(\log N)$ parallel steps directly within registers and shared memory, writing only the final output vectors $y$ back to HBM. This eliminates memory bandwidth bottlenecks entirely.
+          </p>
+
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            State Space Models replace the quadratic memory and compute overhead of transformer self-attention with a constant-memory recurrent state. By making state-space projection parameters dynamically dependent on current input tokens and executing parallel associative scans entirely within fast GPU SRAM, Mamba achieves linear-time training and lightning-fast constant-time inference without sacrificing long-range contextual recall.
+          </div>
+        </div>
+
+        <div class="ai-explainer-box">
+          <div class="ai-explainer-info">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
+          </div>
+          <div class="ai-btn-group">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'mamba-state-space-models-linear-time-sequence')">
+              <i class="fa-solid fa-robot"></i> ChatGPT
+            </button>
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'mamba-state-space-models-linear-time-sequence')">
+              <i class="fa-solid fa-brain"></i> Claude
+            </button>
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'mamba-state-space-models-linear-time-sequence')">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
+            </button>
+          </div>
+        </div>
+
+        <div class="article-footer">
+          <span>Curated Tech Notes</span>
+          <span>Category: AI / Machine Learning Engineering</span>
+        </div>
+      </article>
+
       <!-- Article: November 9, 2026 -->
-      <article class="article-card featured" id="tcp-time-wait-ephemeral-port-exhaustion" data-category="backend" data-keywords="tcp time wait ephemeral port exhaustion connection pooling http keep alive 4 tuple socket starvation linux kernel sysctl tw_reuse">
+      <article class="article-card" id="tcp-time-wait-ephemeral-port-exhaustion" data-category="backend" data-keywords="tcp time wait ephemeral port exhaustion connection pooling http keep alive 4 tuple socket starvation linux kernel sysctl tw_reuse">
         <div class="article-header-top">
           <div class="article-meta">
             <span class="article-tag">Networking</span>
