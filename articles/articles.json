@@ -1,4 +1,9 @@
 [
+  "2026-11-17-keyset-pagination-vs-offset-performance.json",
+  "2026-11-16-constrained-decoding-fsm-grammar-structured-outputs.json",
+  "2026-11-15-postgres-vacuum-bloat-hot-updates.json",
+  "2026-11-14-prefill-decode-disaggregation-llm-serving.json",
+  "2026-11-13-disaggregated-storage-compute-aurora-neon.json",
   "2026-11-12-flash-decoding-long-context-inference.json",
   "2026-11-11-zero-downtime-schema-migrations-expand-contract.json",
   "2026-11-10-mamba-state-space-models-linear-time-sequence.json",

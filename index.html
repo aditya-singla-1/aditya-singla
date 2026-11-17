@@ -1327,24 +1327,24 @@ a {
         </a>
       </div>
 
-      <!-- Single Featured Headline Box (Latest: November 12, 2026) -->
+      <!-- Single Featured Headline Box (Latest: November 17, 2026) -->
       <div class="resource-card" style="border-color: rgba(56, 189, 248, 0.3); background: linear-gradient(180deg, rgba(56, 189, 248, 0.03) 0%, var(--bg-surface) 100%);">
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 0.85rem;">
-          <span class="resource-badge">LLM Inference Systems &amp; GPU Architecture</span>
-          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);"><i class="fa-regular fa-calendar"></i> November 12, 2026</span>
+          <span class="resource-badge">Database Architecture &amp; Query Optimization</span>
+          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);"><i class="fa-regular fa-calendar"></i> November 17, 2026</span>
           <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-emerald);"><i class="fa-regular fa-clock"></i> 8 min read</span>
         </div>
 
         <h3 style="font-size: 1.35rem; font-weight: 700; line-height: 1.35; margin-bottom: 0.75rem;">
-          <a href="tech-articles/#flash-decoding-long-context-inference" style="color: var(--text-primary);">FlashDecoding Under the Hood: Parallelizing KV-Cache Attention Along Sequence Length to Solve the Autoregressive Decoding Bottleneck</a>
+          <a href="tech-articles/#keyset-pagination-vs-offset-performance" style="color: var(--text-primary);">Keyset Pagination vs. Offset Pagination: Why OFFSET 100,000 Destroys Database Performance and How Keyset Cursors Deliver Constant-Time Queries</a>
         </h3>
 
         <p style="font-size: 0.93rem; color: var(--text-secondary); line-height: 1.65; margin-bottom: 1.25rem;">
-          Standard FlashAttention leaves up to 80% of GPU streaming multiprocessors idle during single-token decoding because it only parallelizes over batch size and query heads. FlashDecoding solves this bottleneck by splitting the KV cache along sequence length into independent chunks, computing partial attentions in parallel, and combining them with a fast tree reduction for up to 8x faster generation.
+          Using SQL OFFSET forces database storage engines to scan and discard thousands of preceding rows off disk, degrading buffer caches and corrupting user pagination streams with data drift. Keyset seek pagination leverages composite B-Tree indexes on (created_at, id) to seek directly to the cursor position in O(log N) time, delivering rock-solid sub-millisecond queries at any dataset depth.
         </p>
 
         <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 1rem; flex-wrap: wrap; gap: 10px;">
-          <a href="tech-articles/#flash-decoding-long-context-inference" class="btn btn-primary" style="padding: 7px 14px; font-size: 0.825rem;">
+          <a href="tech-articles/#keyset-pagination-vs-offset-performance" class="btn btn-primary" style="padding: 7px 14px; font-size: 0.825rem;">
             Read Full Breakdown <i class="fa-solid fa-arrow-right"></i>
           </a>
           <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);">Opens Tech Articles Archive</span>
