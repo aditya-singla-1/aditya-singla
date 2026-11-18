@@ -1,4 +1,5 @@
 [
+  "2026-11-18-lookahead-decoding-jacobi-iteration.json",
   "2026-11-17-keyset-pagination-vs-offset-performance.json",
   "2026-11-16-constrained-decoding-fsm-grammar-structured-outputs.json",
   "2026-11-15-postgres-vacuum-bloat-hot-updates.json",
