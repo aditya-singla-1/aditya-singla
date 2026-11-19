@@ -1327,24 +1327,24 @@ a {
         </a>
       </div>
 
-      <!-- Single Featured Headline Box (Latest: November 18, 2026) -->
+      <!-- Single Featured Headline Box (Latest: November 19, 2026) -->
       <div class="resource-card" style="border-color: rgba(56, 189, 248, 0.3); background: linear-gradient(180deg, rgba(56, 189, 248, 0.03) 0%, var(--bg-surface) 100%);">
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 0.85rem;">
-          <span class="resource-badge">LLM Inference Acceleration &amp; Systems</span>
-          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);"><i class="fa-regular fa-calendar"></i> November 18, 2026</span>
+          <span class="resource-badge">Distributed Systems &amp; High-Throughput Concurrency</span>
+          <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);"><i class="fa-regular fa-calendar"></i> November 19, 2026</span>
           <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-emerald);"><i class="fa-regular fa-clock"></i> 8 min read</span>
         </div>
 
         <h3 style="font-size: 1.35rem; font-weight: 700; line-height: 1.35; margin-bottom: 0.75rem;">
-          <a href="tech-articles/#lookahead-decoding-jacobi-iteration" style="color: var(--text-primary);">Lookahead Decoding: How Jacobi Fixed-Point Iteration Accelerates LLM Inference Without an Auxiliary Draft Model</a>
+          <a href="tech-articles/#singleflight-request-coalescing-thundering-herd" style="color: var(--text-primary);">Request Coalescing &amp; Singleflight: Eliminating Thundering Herds and Cache Stampedes Without Distributed Locks</a>
         </h3>
 
         <p style="font-size: 0.93rem; color: var(--text-secondary); line-height: 1.65; margin-bottom: 1.25rem;">
-          Autoregressive decoding leaves GPU Tensor Cores idle while streaming weights for each individual token, yet maintaining a secondary speculative draft model introduces heavy memory and synchronization overhead. Lookahead decoding formulates generation as a system of non-linear equations solved via Jacobi iteration, verifying multi-token candidate trajectories in parallel within the base model for up to 2.3x speedups.
+          When high-traffic cache keys expire, thousands of concurrent requests miss cache simultaneously and bombard downstream databases with identical queries, triggering severe connection pool exhaustion. Request coalescing via singleflight deduplicates in-flight calls in memory, ensuring only one worker queries the database while all concurrent callers block and share the identical result.
         </p>
 
         <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 1rem; flex-wrap: wrap; gap: 10px;">
-          <a href="tech-articles/#lookahead-decoding-jacobi-iteration" class="btn btn-primary" style="padding: 7px 14px; font-size: 0.825rem;">
+          <a href="tech-articles/#singleflight-request-coalescing-thundering-herd" class="btn btn-primary" style="padding: 7px 14px; font-size: 0.825rem;">
             Read Full Breakdown <i class="fa-solid fa-arrow-right"></i>
           </a>
           <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);">Opens Tech Articles Archive</span>

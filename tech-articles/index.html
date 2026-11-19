@@ -641,7 +641,7 @@ a {
           <input type="text" id="article-search" class="search-input" placeholder="Search tech articles, AI topics, keywords..." autocomplete="off">
         </div>
         <div class="filter-chips">
-          <button class="filter-chip active" data-category="all">All Articles (82)</button>
+          <button class="filter-chip active" data-category="all">All Articles (83)</button>
           <button class="filter-chip" data-category="ai">AI & LLM Infra</button>
           <button class="filter-chip" data-category="system-design">System Design</button>
           <button class="filter-chip" data-category="databases">Databases & Data Eng</button>
@@ -654,8 +654,86 @@ a {
   <main class="container">
     <div class="article-list" id="article-container">
 
+      <!-- Article: November 19, 2026 -->
+      <article class="article-card featured" id="singleflight-request-coalescing-thundering-herd" data-category="system-design" data-keywords="singleflight request coalescing thundering herd cache stampede dog piling in flight deduplication golang sync mutex waitgroup dataloader">
+        <div class="article-header-top">
+          <div class="article-meta">
+            <span class="article-tag">Distributed Systems</span>
+            <span class="article-tag">High Throughput Concurrency</span>
+            <span class="article-date"><i class="fa-regular fa-calendar"></i> November 19, 2026</span>
+            <span class="article-read-time"><i class="fa-regular fa-clock"></i> 8 min read</span>
+          </div>
+          <button class="article-share-btn" onclick="shareArticle('singleflight-request-coalescing-thundering-herd', event)" title="Copy link to article" aria-label="Share article">
+            <i class="fa-solid fa-share-nodes"></i> <span>Share</span>
+          </button>
+        </div>
+
+        <h2 class="article-title">
+          Request Coalescing &amp; Singleflight: Eliminating Thundering Herds and Cache Stampedes Without Distributed Locks
+        </h2>
+
+        <p class="article-summary">
+          When a hot cache key expires or a sudden traffic surge hits a cold system, thousands of concurrent requests miss cache at the exact same millisecond. In standard backend architectures, every concurrent worker immediately fires an identical query to the database, creating a catastrophic thundering herd (also known as a cache stampede or dog-piling effect) that exhausts connection pools and triggers cascading downtime. While engineers often turn to distributed locks like Redis Redlock to coordinate access, distributed locks introduce network overhead, lock contention, timeout vulnerabilities, and complex deadlocks. Request coalescing (popularized by Go's singleflight package and modern proxy architectures) solves this concurrency problem in memory. By tracking in-flight upstream calls in a thread-safe registry, singleflight ensures that only the first request performs the expensive upstream I/O, while all subsequent concurrent requests for the same key block and share the identical result once it resolves—turning 10,000 duplicate database queries into exactly one.
+        </p>
+
+        <div class="article-body">
+          <div class="analogy-box">
+            <div class="analogy-title">
+              <i class="fa-solid fa-lightbulb"></i> The Real-Life Analogy: The Coffee Pot Carafe vs. 50 Individual Barista Runs
+            </div>
+            Imagine an office of 50 engineers who all step into the kitchen at 10:00 AM and discover that the communal coffee pot is empty.<br><br>Under an <strong>Uncoordinated Thundering Herd</strong>, all 50 engineers bolt out the front door, sprint down the street to the local café, and crowd the counter. Each engineer places a separate order for an identical cup of dark roast. The overwhelmed barista faces 50 simultaneous orders, preparation delays skyrocket to 45 minutes, the café grinders overheat, and 49 cups go to waste.<br><br>Under <strong>Distributed Locking</strong>, the office installs a single brass key for the front door. One engineer grabs the key and leaves. The other 49 engineers stand crowded in the hallway, rattling the doorknob every five seconds to see if the key has returned—wasting energy and jamming the hallway.<br><br>Under <strong>Request Coalescing (Singleflight)</strong>, the first engineer at the counter speaks up: <em>"I am walking down to the café with the 50-cup carafe right now."</em> The other 49 engineers leave their mugs on the kitchen counter and return to their desks. Exactly one person walks to the barista, purchases one large batch, returns, and fills all 50 mugs in a single pour. The barista handles one customer, zero hallway traffic is generated, and everyone drinks fresh coffee at the exact same second.
+          </div>
+
+          <h3>1. The Anatomy of a Cache Stampede: Why Distributed Systems Collapse on Expiration</h3>
+          <p>
+            In high-throughput microservices, caching is the first line of defense protecting primary databases from unsustainable load. However, standard cache-aside implementations harbor a critical structural weakness during key eviction:<br><br>&bull; <strong>The Eviction Window Vulnerability</strong>: Consider a high-traffic endpoint serving 5,000 requests per second for a trending user profile or product listing. If the cached Redis entry has a 60-second TTL, request #300,001 encounters a cache miss. In the next 20 milliseconds while the database query executes, 100 new concurrent requests arrive, find no cache entry, and all 100 issue identical database queries.<br>&bull; <strong>Database Connection Pool Saturation</strong>: Relational databases like PostgreSQL allocate dedicated memory and processes for each connection. When dozens of application pods each launch hundreds of duplicate queries simultaneously, connection pools exhaust within milliseconds. Queued transactions time out, database CPU spikes to 100%, and health-check queries fail, causing Kubernetes to erroneously restart healthy database replicas.<br>&bull; <strong>The Limits of Distributed Locks</strong>: Attempting to serialize cache misses using Redis mutexes (e.g., SETNX) creates new failure modes: network round-trips to the cache cluster add baseline latency, lock expirations must be guessed accurately to avoid early release during slow queries, and waiting workers must either busy-wait via polling loops or immediately return degraded 503 errors.
+          </p>
+
+          <div class="diagram-box">
+            <svg class="diagram-svg" viewBox="0 0 700 170" width="100%" height="170" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="20" width="205" height="140" rx="8" fill="#151822" stroke="#ef4444" stroke-width="1.2" /><text x="122" y="42" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">1. THUNDERING HERD</text><rect x="32" y="54" width="181" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="122" y="68" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="8" text-anchor="middle">1,000 Concurrent Misses</text><text x="122" y="81" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Hot Key TTL Expires</text><rect x="32" y="94" width="181" height="36" rx="4" fill="rgba(239,68,68,0.12)" stroke="#ef4444" /><text x="122" y="108" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">1,000 DB Queries Fired &#x2717;</text><text x="122" y="122" fill="#f87171" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Connection Pool Exhaustion</text><text x="122" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Cascading Service Outage</text><line x1="225" y1="90" x2="245" y2="90" stroke="#f59e0b" stroke-width="2" /><polygon points="245,90 238,86 238,94" fill="#f59e0b" /><rect x="245" y="20" width="210" height="140" rx="8" fill="#151822" stroke="#f59e0b" stroke-width="1.2" /><text x="350" y="42" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">2. SINGLEFLIGHT REGISTRY</text><rect x="257" y="54" width="186" height="34" rx="4" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" /><text x="350" y="68" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Leader: Registers in-flight key</text><text x="350" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">c.wg.Add(1) &amp; Executes Upstream</text><rect x="257" y="94" width="186" height="36" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="350" y="108" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Followers (2..N): Wait on wg</text><text x="350" y="122" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Zero Duplicate DB Calls</text><text x="350" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">In-Memory Coalescing Map</text><line x1="455" y1="90" x2="475" y2="90" stroke="#34d399" stroke-width="2" /><polygon points="475,90 468,86 468,94" fill="#34d399" /><rect x="475" y="20" width="205" height="140" rx="8" fill="#151822" stroke="#34d399" stroke-width="1.2" /><text x="577" y="42" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" text-anchor="middle">3. BROADCAST RESULT</text><rect x="487" y="54" width="181" height="34" rx="4" fill="#1c202e" stroke="rgba(255,255,255,0.15)" /><text x="577" y="68" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">Single DB Fetch Resolves</text><text x="577" y="81" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">c.wg.Done() Closes Wait State</text><rect x="487" y="94" width="181" height="36" rx="4" fill="rgba(52,211,153,0.12)" stroke="#34d399" /><text x="577" y="108" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="bold" text-anchor="middle">All 1,000 Receive Payload &#x2714;</text><text x="577" y="122" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="7.5" text-anchor="middle">Zero Lock Overheads &#x2714;</text><text x="577" y="150" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" text-anchor="middle">Deterministic 1:N Sharing</text></svg>
+          </div>
+
+          <h3>2. Singleflight Mechanics: Thread-Safe In-Flight Deduplication Under the Hood</h3>
+          <p>
+            Go's <code>golang.org/x/sync/singleflight</code> package solves the thundering herd problem in-process using an elegant state machine based on a hash map, a mutex, and synchronization primitives:<br><br>&bull; <strong>The Call Registry</strong>: The singleflight <code>Group</code> struct maintains an internal map: <code>m map[string]*call</code> guarded by a standard <code>sync.Mutex</code>. Each <code>call</code> struct encapsulates a <code>sync.WaitGroup</code> (or a completion channel), the function return values (<code>val interface{}</code>, <code>err error</code>), and a counter of shared callers.<br>&bull; <strong>Fast Path vs. Waiting Path</strong>: When a worker invokes <code>g.Do(key, fn)</code>, it locks the mutex. If the key already exists in the map, the worker increments the waiter count, unlocks the mutex, and calls <code>c.wg.Wait()</code>, suspending its goroutine with zero CPU burn. If the key does not exist, the worker allocates a new <code>call</code> struct, sets <code>c.wg.Add(1)</code>, inserts it into the map, unlocks the mutex, and executes <code>fn()</code> synchronously.<br>&bull; <strong>Broadcast and Cleanup</strong>: When <code>fn()</code> finishes, the leader re-acquires the mutex, deletes the key from <code>m</code> so subsequent callers initiate a fresh cycle, and calls <code>c.wg.Done()</code>. All waiting goroutines wake up simultaneously and return pointers to the exact same result and error without ever touching downstream I/O.<br>&bull; <strong>Non-Blocking Channels via DoChan</strong>: For latency-sensitive microservices, <code>g.DoChan(key, fn)</code> returns a read-only channel emitting a <code>Result</code> struct. This allows callers to select between the singleflight result, a context deadline timeout, or a fallback cache value.
+          </p>
+
+          <h3>3. Production Pitfalls: Shared Errors, Mutability Bugs, and Scope Boundaries</h3>
+          <p>
+            While singleflight provides immense protection, senior engineers must guard against three subtle operational footguns in production:<br><br>&bull; <strong>Error &amp; Latency Amplification</strong>: Because all concurrent callers share the leader's execution, if the upstream database query stalls or returns a timeout error, all 1,000 waiting callers fail together. If the leader's network connection hangs, every waiting client experiences high tail latency. Mitigate this by enforcing strict context timeouts on the upstream query and caching negative results briefly.<br>&bull; <strong>Shared Memory Mutation Hazards</strong>: Singleflight returns the exact same in-memory object reference to every caller. If Caller A receives a pointer to a struct and modifies a field (e.g., serializing or filtering data for a specific user role), it causes concurrent data races and corrupts data for Callers B, C, and D. Return values must be treated as immutable, or deep-copied before mutation.<br>&bull; <strong>Process Scope vs. Cluster Scope</strong>: In-memory singleflight deduplicates requests only within a single container or pod. If you run 20 pods behind an ALB, each pod executes at most one upstream query (20 queries total instead of 20,000). For massive scale, combine in-pod singleflight with consistent hashing on your load balancer, or deploy edge proxies (such as Nginx with <code>proxy_cache_use_stale updating</code> or Envoy request coalescing) to collapse traffic at the cluster perimeter.
+          </p>
+
+          <div class="takeaway-box">
+            <div class="takeaway-title">Core Engineering Takeaway</div>
+            When high-traffic cache keys expire, naive systems drown downstream databases in duplicate queries known as thundering herds. Instead of adding complex distributed locks with timeout and deadlock risks, request coalescing via singleflight deduplicates in-flight calls in memory. Exactly one worker executes the upstream I/O while all concurrent callers block and share the identical result, compressing thousands of potential database hits into a single, efficient operation.
+          </div>
+        </div>
+
+        <div class="ai-explainer-box">
+          <div class="ai-explainer-info">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Want an even simpler explanation?
+          </div>
+          <div class="ai-btn-group">
+            <button class="ai-btn ai-btn-chatgpt" onclick="openAIExplainer('chatgpt', 'singleflight-request-coalescing-thundering-herd')">
+              <i class="fa-solid fa-robot"></i> ChatGPT
+            </button>
+            <button class="ai-btn ai-btn-claude" onclick="openAIExplainer('claude', 'singleflight-request-coalescing-thundering-herd')">
+              <i class="fa-solid fa-brain"></i> Claude
+            </button>
+            <button class="ai-btn ai-btn-perplexity" onclick="openAIExplainer('perplexity', 'singleflight-request-coalescing-thundering-herd')">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Perplexity
+            </button>
+          </div>
+        </div>
+
+        <div class="article-footer">
+          <span>Curated Tech Notes</span>
+          <span>Category: Distributed Systems &amp; High-Throughput Concurrency</span>
+        </div>
+      </article>
+
       <!-- Article: November 18, 2026 -->
-      <article class="article-card featured" id="lookahead-decoding-jacobi-iteration" data-category="ai" data-keywords="lookahead decoding jacobi iteration speculative decoding autoregressive inference llm latency token generation parallel decoding non linear fixed point draft model free">
+      <article class="article-card" id="lookahead-decoding-jacobi-iteration" data-category="ai" data-keywords="lookahead decoding jacobi iteration speculative decoding autoregressive inference llm latency token generation parallel decoding non linear fixed point draft model free">
         <div class="article-header-top">
           <div class="article-meta">
             <span class="article-tag">Lookahead Decoding</span>
